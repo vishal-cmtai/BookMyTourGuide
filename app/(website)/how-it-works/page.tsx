@@ -1,10 +1,28 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, UserCheck, CreditCard, MapPin, Star, Shield, CheckCircle, Phone, Users, Award } from "lucide-react"
-import Image from "next/image"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  UserCheck,
+  CreditCard,
+  MapPin,
+  Star,
+  Shield,
+  CheckCircle,
+  Phone,
+  Users,
+  Award,
+} from "lucide-react";
+import Image from "next/image";
+import HeroSection from "@/components/all/CommonHeroSection";
 
 export default function HowItWorksPage() {
   const steps = [
@@ -12,7 +30,8 @@ export default function HowItWorksPage() {
       step: 1,
       icon: <Search className="w-8 h-8" />,
       title: "Search & Browse",
-      description: "Browse our curated selection of tours and guides based on your interests, location, and dates.",
+      description:
+        "Browse our curated selection of tours and guides based on your interests, location, and dates.",
       details: [
         "Filter by tour type, location, and price",
         "Read guide profiles and reviews",
@@ -24,7 +43,8 @@ export default function HowItWorksPage() {
       step: 2,
       icon: <UserCheck className="w-8 h-8" />,
       title: "Choose Your Guide",
-      description: "Select from our verified local guides who match your preferences and tour requirements.",
+      description:
+        "Select from our verified local guides who match your preferences and tour requirements.",
       details: [
         "All guides are background verified",
         "View ratings and authentic reviews",
@@ -36,7 +56,8 @@ export default function HowItWorksPage() {
       step: 3,
       icon: <CreditCard className="w-8 h-8" />,
       title: "Secure Booking",
-      description: "Book your tour with a small advance payment. Pay the remaining amount after tour completion.",
+      description:
+        "Book your tour with a small advance payment. Pay the remaining amount after tour completion.",
       details: [
         "Pay only 20-30% advance",
         "Secure payment gateway",
@@ -48,7 +69,8 @@ export default function HowItWorksPage() {
       step: 4,
       icon: <MapPin className="w-8 h-8" />,
       title: "Enjoy Your Tour",
-      description: "Meet your guide at the designated location and embark on your authentic Indian adventure.",
+      description:
+        "Meet your guide at the designated location and embark on your authentic Indian adventure.",
       details: [
         "GPS tracking for safety",
         "24/7 emergency support",
@@ -56,13 +78,14 @@ export default function HowItWorksPage() {
         "Professional guide service",
       ],
     },
-  ]
+  ];
 
   const safetyFeatures = [
     {
       icon: <Shield className="w-6 h-6 text-primary" />,
       title: "Verified Guides",
-      description: "Background checks, ID verification, and professional training",
+      description:
+        "Background checks, ID verification, and professional training",
     },
     {
       icon: <Phone className="w-6 h-6 text-secondary" />,
@@ -79,7 +102,7 @@ export default function HowItWorksPage() {
       title: "Quality Assurance",
       description: "Regular monitoring and feedback system",
     },
-  ]
+  ];
 
   const paymentProcess = [
     {
@@ -110,7 +133,7 @@ export default function HowItWorksPage() {
       amount: "Feedback",
       timing: "Post tour",
     },
-  ]
+  ];
 
   const guideProcess = [
     {
@@ -133,51 +156,64 @@ export default function HowItWorksPage() {
       title: "Go Live",
       description: "Start receiving bookings and earning money",
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="tourism-gradient text-white py-16">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in-up">How It Works</h1>
-            <p className="text-xl md:text-2xl mb-8 animate-fade-in-up animate-delay-200">
-              Simple, safe, and seamless way to book authentic local experiences
-            </p>
-          </div>
-        </section>
+        <HeroSection
+          badgeText="How It Works"
+          title="Simple Steps to Plan Your Perfect Trip"
+          description="From choosing a guide to booking your next adventure — discover how easy it is to travel with BookMyTourGuide."
+          backgroundImage="/3.jpg"
+        />
 
         {/* Main Process Steps */}
         <section className="py-16">
           <div className="container max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Book Your Perfect Tour in 4 Easy Steps</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              Book Your Perfect Tour in 4 Easy Steps
+            </h2>
             <div className="space-y-16">
               {steps.map((step, index) => (
                 <div
                   key={step.step}
-                  className={`flex flex-col lg:flex-row items-center gap-8 ${index % 2 === 1 ? "lg:flex-row-reverse" : ""}`}
+                  className={`flex flex-col lg:flex-row items-center gap-8 ${
+                    index % 2 === 1 ? "lg:flex-row-reverse" : ""
+                  }`}
                 >
-                  <div className="flex-1 animate-fade-in-up" style={{ animationDelay: `${index * 0.2}s` }}>
+                  <div
+                    className="flex-1 animate-fade-in-up"
+                    style={{ animationDelay: `${index * 0.2}s` }}
+                  >
                     <div className="relative h-64 md:h-80 rounded-lg overflow-hidden">
                       <Image
-                        src={`/single-footprint-sand.png?height=400&width=600&query=step ${step.step} ${step.title.toLowerCase()} tourism booking process`}
+                        src={`/single-footprint-sand.png?height=400&width=600&query=step ${
+                          step.step
+                        } ${step.title.toLowerCase()} tourism booking process`}
                         alt={step.title}
                         fill
                         className="object-cover"
                       />
                     </div>
                   </div>
-                  <div className="flex-1 animate-fade-in-up" style={{ animationDelay: `${index * 0.2 + 0.1}s` }}>
+                  <div
+                    className="flex-1 animate-fade-in-up"
+                    style={{ animationDelay: `${index * 0.2 + 0.1}s` }}
+                  >
                     <div className="flex items-center gap-4 mb-6">
                       <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold">
                         {step.step}
                       </div>
                       <div className="text-primary">{step.icon}</div>
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-bold mb-4">{step.title}</h3>
-                    <p className="text-lg text-muted-foreground mb-6">{step.description}</p>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                      {step.title}
+                    </h3>
+                    <p className="text-lg text-muted-foreground mb-6">
+                      {step.description}
+                    </p>
                     <ul className="space-y-2">
                       {step.details.map((detail, idx) => (
                         <li key={idx} className="flex items-center gap-3">
@@ -196,7 +232,9 @@ export default function HowItWorksPage() {
         {/* Payment Process */}
         <section className="py-16 bg-card">
           <div className="container max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Transparent Payment Process</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              Transparent Payment Process
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {paymentProcess.map((payment, index) => (
                 <Card
@@ -211,11 +249,15 @@ export default function HowItWorksPage() {
                     <CardTitle className="text-lg">{payment.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground mb-3">{payment.description}</p>
+                    <p className="text-muted-foreground mb-3">
+                      {payment.description}
+                    </p>
                     <Badge variant="outline" className="mb-2">
                       {payment.amount}
                     </Badge>
-                    <p className="text-sm text-muted-foreground">{payment.timing}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {payment.timing}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -223,7 +265,8 @@ export default function HowItWorksPage() {
             <div className="text-center mt-8">
               <p className="text-lg text-muted-foreground">
                 <Shield className="w-5 h-5 inline mr-2" />
-                Secure payments • No hidden charges • Full refund on cancellation
+                Secure payments • No hidden charges • Full refund on
+                cancellation
               </p>
             </div>
           </div>
@@ -232,7 +275,9 @@ export default function HowItWorksPage() {
         {/* Safety Features */}
         <section className="py-16">
           <div className="container max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Your Safety is Our Priority</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              Your Safety is Our Priority
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {safetyFeatures.map((feature, index) => (
                 <Card
@@ -241,11 +286,15 @@ export default function HowItWorksPage() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CardHeader>
-                    <div className="flex justify-center mb-4">{feature.icon}</div>
+                    <div className="flex justify-center mb-4">
+                      {feature.icon}
+                    </div>
                     <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-center">{feature.description}</CardDescription>
+                    <CardDescription className="text-center">
+                      {feature.description}
+                    </CardDescription>
                   </CardContent>
                 </Card>
               ))}
@@ -257,7 +306,9 @@ export default function HowItWorksPage() {
         <section className="py-16 bg-card">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Want to Become a Guide?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+                Want to Become a Guide?
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                 {guideProcess.map((process, index) => (
                   <div
@@ -268,13 +319,20 @@ export default function HowItWorksPage() {
                     <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
                       {process.step}
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{process.title}</h3>
-                    <p className="text-sm text-muted-foreground">{process.description}</p>
+                    <h3 className="text-lg font-semibold mb-2">
+                      {process.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {process.description}
+                    </p>
                   </div>
                 ))}
               </div>
               <div className="text-center">
-                <Button size="lg" className="bg-secondary hover:bg-secondary/90">
+                <Button
+                  size="lg"
+                  className="bg-secondary hover:bg-secondary/90"
+                >
                   Apply to Become a Guide
                 </Button>
               </div>
@@ -285,7 +343,9 @@ export default function HowItWorksPage() {
         {/* FAQ Section */}
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              Frequently Asked Questions
+            </h2>
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
               <Card className="animate-fade-in-up">
                 <CardHeader>
@@ -297,20 +357,28 @@ export default function HowItWorksPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-semibold mb-1">Can I cancel my booking?</h4>
+                      <h4 className="font-semibold mb-1">
+                        Can I cancel my booking?
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         Yes, free cancellation up to 24 hours before the tour.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">Are guides verified?</h4>
+                      <h4 className="font-semibold mb-1">
+                        Are guides verified?
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         All guides undergo background checks and certification.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">What if I need help during the tour?</h4>
-                      <p className="text-sm text-muted-foreground">24/7 emergency support is available via phone.</p>
+                      <h4 className="font-semibold mb-1">
+                        What if I need help during the tour?
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        24/7 emergency support is available via phone.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -326,19 +394,26 @@ export default function HowItWorksPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-semibold mb-1">How much can I earn?</h4>
+                      <h4 className="font-semibold mb-1">
+                        How much can I earn?
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         ₹500-2000 per hour based on experience and tour type.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">When do I get paid?</h4>
+                      <h4 className="font-semibold mb-1">
+                        When do I get paid?
+                      </h4>
                       <p className="text-sm text-muted-foreground">
-                        Payment is received directly from travelers after tour completion.
+                        Payment is received directly from travelers after tour
+                        completion.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">Can I set my own schedule?</h4>
+                      <h4 className="font-semibold mb-1">
+                        Can I set my own schedule?
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         Yes, you have full control over your availability.
                       </p>
@@ -353,12 +428,18 @@ export default function HowItWorksPage() {
         {/* CTA Section */}
         <section className="py-16 heritage-gradient text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Your Journey?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Ready to Start Your Journey?
+            </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Join thousands of travelers who have discovered authentic India through our platform.
+              Join thousands of travelers who have discovered authentic India
+              through our platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-secondary hover:bg-gray-100">
+              <Button
+                size="lg"
+                className="bg-white text-secondary hover:bg-gray-100"
+              >
                 Book Your First Tour
               </Button>
               <Button
@@ -372,7 +453,6 @@ export default function HowItWorksPage() {
           </div>
         </section>
       </main>
-
     </div>
-  )
+  );
 }

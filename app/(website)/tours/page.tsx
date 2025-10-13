@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { MapPin, Clock, Users, Star, Search } from "lucide-react";
 import Image from "next/image";
+import HeroSection from "@/components/all/CommonHeroSection";
 
 export default function ToursPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -175,16 +176,12 @@ export default function ToursPage() {
     <div className="min-h-screen bg-background">
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="tourism-gradient text-white py-16">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in-up">
-              Discover India's Wonders
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 animate-fade-in-up animate-delay-200">
-              Authentic experiences with certified local guides
-            </p>
-          </div>
-        </section>
+         <HeroSection
+        badgeText="Explore Tours"
+        title="Discover India's Hidden Gems"
+        description="Browse curated experiences led by verified local guides and uncover the heart of every destination."
+        backgroundImage="/3.jpg"
+      />
 
         {/* Filters Section */}
         <section className="py-8 bg-card">

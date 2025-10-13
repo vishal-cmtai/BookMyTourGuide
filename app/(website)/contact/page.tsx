@@ -33,6 +33,7 @@ import {
   Users,
   Shield,
 } from "lucide-react";
+import HeroSection from "@/components/all/CommonHeroSection";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -120,16 +121,12 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background">
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="nature-gradient text-white py-16">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in-up">
-              Get in Touch
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 animate-fade-in-up animate-delay-200">
-              We're here to help you plan your perfect Indian adventure
-            </p>
-          </div>
-        </section>
+        <HeroSection
+          badgeText="Contact Us"
+          title="We’re Here to Help You Explore"
+          description="Have questions or feedback? Reach out and let’s make your travel experience seamless."
+          backgroundImage="/5.jpg"
+        />
 
         {/* Contact Info Cards */}
         <section className="py-16">
