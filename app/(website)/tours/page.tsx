@@ -33,7 +33,7 @@ export default function ToursPage() {
       id: 1,
       title: "Golden Triangle Heritage Tour",
       description: "Explore Delhi, Agra, and Jaipur with expert local guides",
-      image: "/taj-mahal-agra-heritage-tour.jpg",
+      image: "/1.jpg",
       price: "₹8,999",
       duration: "3 Days",
       location: "Delhi, Agra, Jaipur",
@@ -47,7 +47,7 @@ export default function ToursPage() {
       id: 2,
       title: "Kerala Backwaters Eco Tour",
       description: "Sustainable tourism through Kerala's pristine backwaters",
-      image: "/kerala-backwaters-houseboat-eco-tour.jpg",
+      image: "/3.jpg",
       price: "₹6,499",
       duration: "2 Days",
       location: "Alleppey, Kerala",
@@ -66,7 +66,7 @@ export default function ToursPage() {
       id: 3,
       title: "Rajasthani Cooking Masterclass",
       description: "Learn authentic Rajasthani cuisine from local families",
-      image: "/rajasthani-cooking-class-spices-traditional.jpg",
+      image: "/4.jpg",
       price: "₹2,999",
       duration: "1 Day",
       location: "Jaipur, Rajasthan",
@@ -86,7 +86,7 @@ export default function ToursPage() {
       title: "Old Delhi Spice Market Walk",
       description:
         "Discover the aromatic world of Indian spices and street food",
-      image: "/old-delhi-spice-market-chandni-chowk.jpg",
+      image: "/5.jpg",
       price: "₹1,499",
       duration: "4 Hours",
       location: "Old Delhi",
@@ -105,7 +105,7 @@ export default function ToursPage() {
       id: 5,
       title: "Himalayan Trekking Adventure",
       description: "Experience the majestic Himalayas with certified guides",
-      image: "/himalayan-trekking-mountains-adventure.jpg",
+      image: "/2.jpg",
       price: "₹12,999",
       duration: "5 Days",
       location: "Himachal Pradesh",
@@ -124,7 +124,7 @@ export default function ToursPage() {
       id: 6,
       title: "Mumbai Heritage Walking Tour",
       description: "Explore Mumbai's colonial architecture and local culture",
-      image: "/mumbai-heritage-architecture-gateway-of-india.jpg",
+      image: "/4.jpg",
       price: "₹1,999",
       duration: "6 Hours",
       location: "Mumbai, Maharashtra",
@@ -176,16 +176,16 @@ export default function ToursPage() {
     <div className="min-h-screen bg-background">
       <main className="pt-20">
         {/* Hero Section */}
-         <HeroSection
-        badgeText="Explore Tours"
-        title="Discover India's Hidden Gems"
-        description="Browse curated experiences led by verified local guides and uncover the heart of every destination."
-        backgroundImage="/3.jpg"
-      />
+        <HeroSection
+          badgeText="Explore Tours"
+          title="Discover India's Hidden Gems"
+          description="Browse curated experiences led by verified local guides and uncover the heart of every destination."
+          backgroundImage="/3.jpg"
+        />
 
         {/* Filters Section */}
         <section className="py-8 bg-card">
-          <div className="container mx-auto px-4">
+          <div className="container max-w-7xl mx-auto px-4">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -232,7 +232,9 @@ export default function ToursPage() {
 
         {/* Tours Grid */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          {" "}
+          x
+          <div className="container max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTours.map((tour, index) => (
                 <Card

@@ -60,7 +60,7 @@ export function Testimonials() {
       <div className="container max-w-7xl mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">What Our Travelers Say</h2>
-          <p className="text-xl text-muted max-w-3xl mx-auto text-balance">
+          <p className="text-xl text-secondary max-w-3xl mx-auto text-balance">
             Don't just take our word for it. Here's what thousands of satisfied travelers have to say about their
             WanderGuide experiences.
           </p>
@@ -87,7 +87,7 @@ export function Testimonials() {
                 </div>
 
                 {/* Testimonial Text */}
-                <p className="text-muted mb-6 text-balance leading-relaxed">"{testimonial.text}"</p>
+                <p className="text-secondary mb-6 text-balance leading-relaxed">"{testimonial.text}"</p>
 
                 {/* Tour Type */}
                 <div className="text-xs text-secondary font-medium mb-4 bg-secondary/10 px-2 py-1 rounded-full inline-block">
@@ -103,7 +103,7 @@ export function Testimonials() {
                   />
                   <div>
                     <h4 className="font-semibold text-primary">{testimonial.name}</h4>
-                    <p className="text-sm text-muted">{testimonial.location}</p>
+                    <p className="text-sm text-secondary">{testimonial.location}</p>
                   </div>
                 </div>
               </CardContent>
@@ -115,19 +115,19 @@ export function Testimonials() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-border">
           <div className="text-center animate-fade-in-up">
             <div className="text-3xl md:text-4xl font-bold text-primary mb-2">10,000+</div>
-            <div className="text-muted">Happy Travelers</div>
+            <div className="text-secondary">Happy Travelers</div>
           </div>
           <div className="text-center animate-fade-in-up animate-delay-200">
             <div className="text-3xl md:text-4xl font-bold text-primary mb-2">500+</div>
-            <div className="text-muted">Tours Available</div>
+            <div className="text-secondary">Tours Available</div>
           </div>
           <div className="text-center animate-fade-in-up animate-delay-400">
             <div className="text-3xl md:text-4xl font-bold text-primary mb-2">200+</div>
-            <div className="text-muted">Expert Guides</div>
+            <div className="text-secondary">Expert Guides</div>
           </div>
           <div className="text-center animate-fade-in-up animate-delay-600">
             <div className="text-3xl md:text-4xl font-bold text-primary mb-2">4.9/5</div>
-            <div className="text-muted">Average Rating</div>
+            <div className="text-secondary">Average Rating</div>
           </div>
         </div>
       </div>

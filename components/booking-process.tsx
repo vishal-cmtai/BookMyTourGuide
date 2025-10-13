@@ -54,7 +54,7 @@ export function BookingProcess() {
       <div className="container max-w-7xl mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">Simple Booking Process</h2>
-          <p className="text-xl text-muted max-w-3xl mx-auto text-balance">
+          <p className="text-xl text-seconday max-w-3xl mx-auto text-balance">
             Book your perfect tour experience in just a few clicks. Our streamlined process ensures you get the best
             guide for your needs.
           </p>
@@ -82,7 +82,7 @@ export function BookingProcess() {
                   </div>
 
                   <h3 className="text-lg font-bold text-primary mb-2">{step.title}</h3>
-                  <p className="text-muted text-sm mb-3 text-balance">{step.description}</p>
+                  <p className="text-secondary text-sm mb-3 text-balance">{step.description}</p>
                   <p className="text-xs text-secondary font-medium">{step.details}</p>
                 </CardContent>
               </Card>
@@ -104,7 +104,7 @@ export function BookingProcess() {
                   <Icon className="w-10 h-10 text-secondary" />
                 </div>
                 <h3 className="text-xl font-bold text-primary mb-2">{feature.title}</h3>
-                <p className="text-muted text-balance">{feature.description}</p>
+                <p className="text-secondary text-balance">{feature.description}</p>
               </div>
             )
           })}

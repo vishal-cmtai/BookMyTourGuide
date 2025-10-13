@@ -159,7 +159,7 @@ export default function AboutPage() {
               </p>
               <div className="relative h-64 md:h-96 rounded-lg overflow-hidden">
                 <Image
-                  src="/diverse-group-of-indian-tour-guides-with-travelers.jpg"
+                  src="/2.jpg"
                   alt="Our mission in action"
                   fill
                   className="object-cover"

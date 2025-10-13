@@ -189,9 +189,9 @@ export default function HowItWorksPage() {
                   >
                     <div className="relative h-64 md:h-80 rounded-lg overflow-hidden">
                       <Image
-                        src={`/single-footprint-sand.png?height=400&width=600&query=step ${
+                        src={`/${
                           step.step
-                        } ${step.title.toLowerCase()} tourism booking process`}
+                        }.jpg`}
                         alt={step.title}
                         fill
                         className="object-cover"

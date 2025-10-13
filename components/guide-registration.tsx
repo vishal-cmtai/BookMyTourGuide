@@ -46,7 +46,7 @@ export function GuideRegistration() {
           <div className="animate-slide-in-left">
             <Badge className="mb-4 bg-secondary/10 text-secondary border-secondary/20">Join Our Network</Badge>
             <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">Become a Certified Guide</h2>
-            <p className="text-xl text-muted mb-8 text-balance">
+            <p className="text-xl text-secondary mb-8 text-balance">
               Join our exclusive network of professional guides and share your passion for your local culture while
               earning a sustainable income.
             </p>
@@ -62,7 +62,7 @@ export function GuideRegistration() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-primary mb-1">{benefit.title}</h4>
-                      <p className="text-sm text-muted">{benefit.description}</p>
+                      <p className="text-sm text-secondary">{benefit.description}</p>
                     </div>
                   </div>
                 )
@@ -95,7 +95,7 @@ export function GuideRegistration() {
 
                 <div className="mt-6 p-4 bg-card rounded-lg">
                   <h4 className="font-semibold text-primary mb-2">Application Process</h4>
-                  <div className="text-sm text-muted space-y-1">
+                  <div className="text-sm text-secondary space-y-1">
                     <p>1. Submit online application (5 minutes)</p>
                     <p>2. Document verification (2-3 days)</p>
                     <p>3. Video interview with our team</p>
