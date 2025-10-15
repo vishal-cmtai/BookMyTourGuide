@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Award, Clock, DollarSign, CheckCircle, Upload } from "lucide-react";
+import { Award, Clock, DollarSign, CheckCircle, Upload, Star } from "lucide-react";
 import HeroSection from "@/components/all/CommonHeroSection";
 
 export default function GuidesPage() {
@@ -33,13 +33,15 @@ export default function GuidesPage() {
     state: "",
     country: "",
     age: "",
-    languages: [],
+    languages: [] as string[],
     experience: "",
-    specializations: [],
-    availability: [],
+    specializations: [] as string[],
+    availability: [] as string[],
     hourlyRate: "",
     description: "",
   });
+  const [status, setStatus] = useState<'filling'|'pending'|'approved'|'paid'>('filling');
+  const [showPaymentProcessing, setShowPaymentProcessing] = useState(false);
 
   const benefits = [
     {
@@ -161,6 +163,24 @@ export default function GuidesPage() {
     }
   };
 
+  // On submit, move to pending state
+  const handleSubmit = () => {
+    setStatus('pending');
+  };
+
+  // Simulate admin approval
+  const handleAdminApprove = () => {
+    setStatus('approved');
+  }
+
+  // Simulate guide membership payment
+  const handleMembershipPay = async () => {
+    setShowPaymentProcessing(true);
+    await new Promise(r => setTimeout(r, 2000));
+    setShowPaymentProcessing(false);
+    setStatus('paid');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <main className="pt-20">
@@ -261,348 +281,383 @@ export default function GuidesPage() {
         <section id="registration" className="py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-                Guide Registration
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Guide Registration</h2>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Step {formStep} of 3:{" "}
-                    {formStep === 1
-                      ? "Personal Information"
-                      : formStep === 2
-                      ? "Professional Details"
-                      : "Availability & Rates"}
-                  </CardTitle>
-                  <CardDescription>
-                    Fill in your details to join our network of certified guides
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {formStep === 1 && (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="name">Full Name *</Label>
-                          <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                name: e.target.value,
-                              }))
-                            }
-                            placeholder="Enter your full name"
-                          />
+              {/* When filling form as before */}
+              {status === 'filling' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      Step {formStep} of 3: {formStep === 1 ? 'Personal Information' : formStep === 2 ? 'Professional Details' : 'Availability & Rates'}
+                    </CardTitle>
+                    <CardDescription>
+                      Fill in your details to join our network of certified guides
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {formStep === 1 && (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="name">Full Name *</Label>
+                            <Input
+                              id="name"
+                              value={formData.name}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter your full name"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="mobile">Mobile Number *</Label>
+                            <Input
+                              id="mobile"
+                              value={formData.mobile}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  mobile: e.target.value,
+                                }))
+                              }
+                              placeholder="+91 9876543210"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <Label htmlFor="mobile">Mobile Number *</Label>
-                          <Input
-                            id="mobile"
-                            value={formData.mobile}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                mobile: e.target.value,
-                              }))
-                            }
-                            placeholder="+91 9876543210"
-                          />
-                        </div>
-                      </div>
 
-                      <div>
-                        <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              email: e.target.value,
-                            }))
-                          }
-                          placeholder="your.email@example.com"
-                        />
-                      </div>
+                        <div>
+                          <Label htmlFor="email">Email Address *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                email: e.target.value,
+                              }))
+                            }
+                            placeholder="your.email@example.com"
+                          />
+                        </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="dob">Date of Birth *</Label>
-                          <Input
-                            id="dob"
-                            type="date"
-                            value={formData.dob}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                dob: e.target.value,
-                              }))
-                            }
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="dob">Date of Birth *</Label>
+                            <Input
+                              id="dob"
+                              type="date"
+                              value={formData.dob}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  dob: e.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="age">Age *</Label>
+                            <Input
+                              id="age"
+                              type="number"
+                              value={formData.age}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  age: e.target.value,
+                                }))
+                              }
+                              placeholder="25"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="country">Country *</Label>
+                            <Select
+                              value={formData.country}
+                              onValueChange={(value) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  country: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="india">India</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
+
                         <div>
-                          <Label htmlFor="age">Age *</Label>
-                          <Input
-                            id="age"
-                            type="number"
-                            value={formData.age}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                age: e.target.value,
-                              }))
-                            }
-                            placeholder="25"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="country">Country *</Label>
+                          <Label htmlFor="state">State/City *</Label>
                           <Select
-                            value={formData.country}
+                            value={formData.state}
+                            onValueChange={(value) =>
+                              setFormData((prev) => ({ ...prev, state: value }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {states.map((state) => (
+                                <SelectItem
+                                  key={state}
+                                  value={state.toLowerCase()}
+                                >
+                                  {state}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
+
+                    {formStep === 2 && (
+                      <>
+                        <div>
+                          <Label>Languages Known *</Label>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                            {languages.map((language) => (
+                              <div
+                                key={language}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  id={language}
+                                  checked={formData.languages.includes(language)}
+                                  onCheckedChange={(checked) =>
+                                    handleLanguageChange(
+                                      language,
+                                      checked as boolean
+                                    )
+                                  }
+                                />
+                                <Label htmlFor={language} className="text-sm">
+                                  {language}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="experience">
+                            Years of Experience *
+                          </Label>
+                          <Select
+                            value={formData.experience}
                             onValueChange={(value) =>
                               setFormData((prev) => ({
                                 ...prev,
-                                country: value,
+                                experience: value,
                               }))
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select country" />
+                              <SelectValue placeholder="Select experience" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="india">India</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
+                              <SelectItem value="2-5">2-5 years</SelectItem>
+                              <SelectItem value="5-10">5-10 years</SelectItem>
+                              <SelectItem value="10+">10+ years</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
 
-                      <div>
-                        <Label htmlFor="state">State/City *</Label>
-                        <Select
-                          value={formData.state}
-                          onValueChange={(value) =>
-                            setFormData((prev) => ({ ...prev, state: value }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your location" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {states.map((state) => (
-                              <SelectItem
-                                key={state}
-                                value={state.toLowerCase()}
+                        <div>
+                          <Label>Tour Specializations *</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                            {specializations.map((specialization) => (
+                              <div
+                                key={specialization}
+                                className="flex items-center space-x-2"
                               >
-                                {state}
-                              </SelectItem>
+                                <Checkbox
+                                  id={specialization}
+                                  checked={formData.specializations.includes(
+                                    specialization
+                                  )}
+                                  onCheckedChange={(checked) =>
+                                    handleSpecializationChange(
+                                      specialization,
+                                      checked as boolean
+                                    )
+                                  }
+                                />
+                                <Label
+                                  htmlFor={specialization}
+                                  className="text-sm"
+                                >
+                                  {specialization}
+                                </Label>
+                              </div>
                             ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </>
-                  )}
-
-                  {formStep === 2 && (
-                    <>
-                      <div>
-                        <Label>Languages Known *</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                          {languages.map((language) => (
-                            <div
-                              key={language}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                id={language}
-                                checked={formData.languages.includes(language)}
-                                onCheckedChange={(checked) =>
-                                  handleLanguageChange(
-                                    language,
-                                    checked as boolean
-                                  )
-                                }
-                              />
-                              <Label htmlFor={language} className="text-sm">
-                                {language}
-                              </Label>
-                            </div>
-                          ))}
+                          </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <Label htmlFor="experience">
-                          Years of Experience *
-                        </Label>
-                        <Select
-                          value={formData.experience}
-                          onValueChange={(value) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              experience: value,
-                            }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select experience" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2-5">2-5 years</SelectItem>
-                            <SelectItem value="5-10">5-10 years</SelectItem>
-                            <SelectItem value="10+">10+ years</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                        <div>
+                          <Label htmlFor="description">About Yourself *</Label>
+                          <Textarea
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                description: e.target.value,
+                              }))
+                            }
+                            placeholder="Tell us about your guiding experience, knowledge, and what makes you special..."
+                            rows={4}
+                          />
+                        </div>
+                      </>
+                    )}
 
-                      <div>
-                        <Label>Tour Specializations *</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                          {specializations.map((specialization) => (
-                            <div
-                              key={specialization}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                id={specialization}
-                                checked={formData.specializations.includes(
-                                  specialization
-                                )}
-                                onCheckedChange={(checked) =>
-                                  handleSpecializationChange(
-                                    specialization,
-                                    checked as boolean
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={specialization}
-                                className="text-sm"
+                    {formStep === 3 && (
+                      <>
+                        <div>
+                          <Label htmlFor="hourlyRate">Hourly Rate (₹) *</Label>
+                          <Input
+                            id="hourlyRate"
+                            type="number"
+                            value={formData.hourlyRate}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                hourlyRate: e.target.value,
+                              }))
+                            }
+                            placeholder="500"
+                          />
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Recommended: ₹500-2000 per hour based on experience
+                          </p>
+                        </div>
+
+                        <div>
+                          <Label>Document Upload *</Label>
+                          <div className="space-y-3 mt-2">
+                            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">
+                                Upload Government ID (Aadhar/Passport/Driving
+                                License)
+                              </p>
+                              <Button
+                                variant="outline"
+                                className="mt-2 bg-transparent"
                               >
-                                {specialization}
-                              </Label>
+                                Choose File
+                              </Button>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="description">About Yourself *</Label>
-                        <Textarea
-                          id="description"
-                          value={formData.description}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              description: e.target.value,
-                            }))
-                          }
-                          placeholder="Tell us about your guiding experience, knowledge, and what makes you special..."
-                          rows={4}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {formStep === 3 && (
-                    <>
-                      <div>
-                        <Label htmlFor="hourlyRate">Hourly Rate (₹) *</Label>
-                        <Input
-                          id="hourlyRate"
-                          type="number"
-                          value={formData.hourlyRate}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              hourlyRate: e.target.value,
-                            }))
-                          }
-                          placeholder="500"
-                        />
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Recommended: ₹500-2000 per hour based on experience
-                        </p>
-                      </div>
-
-                      <div>
-                        <Label>Document Upload *</Label>
-                        <div className="space-y-3 mt-2">
-                          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                            <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">
-                              Upload Government ID (Aadhar/Passport/Driving
-                              License)
-                            </p>
-                            <Button
-                              variant="outline"
-                              className="mt-2 bg-transparent"
-                            >
-                              Choose File
-                            </Button>
-                          </div>
-                          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                            <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">
-                              Upload Professional Photo
-                            </p>
-                            <Button
-                              variant="outline"
-                              className="mt-2 bg-transparent"
-                            >
-                              Choose File
-                            </Button>
+                            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">
+                                Upload Professional Photo
+                              </p>
+                              <Button
+                                variant="outline"
+                                className="mt-2 bg-transparent"
+                              >
+                                Choose File
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="bg-card p-4 rounded-lg">
-                        <h4 className="font-semibold mb-2">Next Steps:</h4>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                          <li>
-                            • We'll verify your documents within 2-3 business
-                            days
-                          </li>
-                          <li>• You'll receive a call for a brief interview</li>
-                          <li>
-                            • Once approved, you can start receiving bookings
-                          </li>
-                          <li>
-                            • We'll provide training materials and support
-                          </li>
-                        </ul>
-                      </div>
-                    </>
-                  )}
+                        <div className="bg-card p-4 rounded-lg">
+                          <h4 className="font-semibold mb-2">Next Steps:</h4>
+                          <ul className="text-sm space-y-1 text-muted-foreground">
+                            <li>
+                              • We'll verify your documents within 2-3 business
+                              days
+                            </li>
+                            <li>• You'll receive a call for a brief interview</li>
+                            <li>
+                              • Once approved, you can start receiving bookings
+                            </li>
+                            <li>
+                              • We'll provide training materials and support
+                            </li>
+                          </ul>
+                        </div>
+                      </>
+                    )}
 
-                  <div className="flex justify-between pt-6">
-                    {formStep > 1 && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setFormStep(formStep - 1)}
-                      >
-                        Previous
-                      </Button>
-                    )}
-                    {formStep < 3 ? (
-                      <Button
-                        className="ml-auto bg-primary hover:bg-primary/90"
-                        onClick={() => setFormStep(formStep + 1)}
-                      >
-                        Next
-                      </Button>
-                    ) : (
-                      <Button className="ml-auto bg-secondary hover:bg-secondary/90">
-                        Submit Application
-                      </Button>
-                    )}
+                    <div className="flex justify-between pt-6">
+                      {formStep > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setFormStep(formStep - 1)}
+                        >
+                          Previous
+                        </Button>
+                      )}
+                      {formStep < 3 ? (
+                        <Button
+                          className="ml-auto bg-primary hover:bg-primary/90"
+                          onClick={() => setFormStep(formStep + 1)}
+                        >
+                          Next
+                        </Button>
+                      ) : (
+                        <Button className="ml-auto bg-secondary hover:bg-secondary/90" onClick={handleSubmit}>
+                          Submit Application
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pending admin approval */}
+              {status === 'pending' && (
+                <div className="p-8 bg-card rounded-2xl shadow-xl text-center flex flex-col items-center">
+                  <Award className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-bounce" />
+                  <h3 className="text-2xl font-bold mb-2 text-primary">Application Submitted!</h3>
+                  <p className="text-lg text-muted-foreground mb-6">Your application is under review. We verify all documents and conduct live interviews for platform security. Approval may take 1-2 days.</p>
+                  <Button onClick={handleAdminApprove} className="mt-4 bg-primary">Simulate Admin Approval</Button>
+                </div>
+              )}
+
+              {/* Approved - ask for membership payment */}
+              {status === 'approved' && (
+                <div className="p-8 bg-card rounded-2xl shadow-xl text-center flex flex-col items-center">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4 animate-bounce" />
+                  <h3 className="text-2xl font-bold mb-2 text-primary">You are Approved!</h3>
+                  <p className="text-lg text-muted-foreground mb-6">Complete your registration by paying your annual membership fee.</p>
+                  <div className="mb-6">
+                    <div className="text-3xl font-extrabold text-primary mb-1">₹1,999</div>
+                    <div className="text-sm text-muted-foreground">(Annual Guide Membership. Includes verification, training, and access to bookings)</div>
                   </div>
-                </CardContent>
-              </Card>
+                  <Button onClick={handleMembershipPay} className="mt-2 bg-primary" disabled={showPaymentProcessing}>
+                    {showPaymentProcessing ? 'Processing...' : 'Pay Membership & Activate Account'}
+                  </Button>
+                </div>
+              )}
+
+              {/* Paid - thank you */}
+              {status === 'paid' && (
+                <div className="p-8 bg-card rounded-2xl shadow-xl text-center flex flex-col items-center">
+                  <Star className="w-16 h-16 text-primary mx-auto mb-4 animate-bounce" />
+                  <h3 className="text-2xl font-bold mb-2 text-primary">Welcome to BookMyTourGuide!</h3>
+                  <p className="text-lg text-muted-foreground mb-2">Thank you for joining our network of professional guides. You can now complete your profile, access training, and start accepting bookings.</p>
+                  <div className="mt-2">
+                    <Button className="bg-primary">Go to Guide Dashboard</Button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </section>

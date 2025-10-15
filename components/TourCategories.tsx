@@ -1,16 +1,28 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Leaf, Building, ChefHat, ShoppingBag, Clock, Star, Users, MapPin } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Leaf,
+  Building,
+  ChefHat,
+  ShoppingBag,
+  Clock,
+  Star,
+  Users,
+  MapPin,
+} from "lucide-react";
+import { useCart } from "@/contexts/CardContext";
 
 export function TourCategories() {
+  const { dispatch } = useCart();
   const categories = [
     {
       icon: Leaf,
       title: "Eco Tours",
-      description: "Sustainable nature experiences with environmental awareness and wildlife spotting",
+      description:
+        "Sustainable nature experiences with environmental awareness and wildlife spotting",
       image: "/1.jpg",
       tours: 120,
       duration: "3-8 hours",
@@ -22,7 +34,8 @@ export function TourCategories() {
     {
       icon: Building,
       title: "Heritage Tours",
-      description: "Explore historical monuments, ancient architecture and cultural landmarks",
+      description:
+        "Explore historical monuments, ancient architecture and cultural landmarks",
       image: "/2.jpg",
       tours: 85,
       duration: "2-6 hours",
@@ -34,7 +47,8 @@ export function TourCategories() {
     {
       icon: ChefHat,
       title: "Cooking Classes",
-      description: "Learn authentic local recipes and traditional cooking techniques from expert chefs",
+      description:
+        "Learn authentic local recipes and traditional cooking techniques from expert chefs",
       image: "/3.jpg",
       tours: 60,
       duration: "2-4 hours",
@@ -46,7 +60,8 @@ export function TourCategories() {
     {
       icon: ShoppingBag,
       title: "Spice Market Tours",
-      description: "Discover exotic spices, local market culture and traditional trading practices",
+      description:
+        "Discover exotic spices, local market culture and traditional trading practices",
       image: "/4.jpg",
       tours: 45,
       duration: "2-3 hours",
@@ -58,7 +73,8 @@ export function TourCategories() {
     {
       icon: Building,
       title: "One-Day Tours",
-      description: "Complete city exploration covering multiple attractions in a single day",
+      description:
+        "Complete city exploration covering multiple attractions in a single day",
       image: "/5.jpg",
       tours: 95,
       duration: "8-10 hours",
@@ -70,7 +86,8 @@ export function TourCategories() {
     {
       icon: ShoppingBag,
       title: "Handcraft Tours",
-      description: "Visit local artisans, learn traditional crafts and support local communities",
+      description:
+        "Visit local artisans, learn traditional crafts and support local communities",
       image: "/1.jpg",
       tours: 30,
       duration: "3-5 hours",
@@ -79,16 +96,22 @@ export function TourCategories() {
       guides: 12,
       popular: false,
     },
-  ]
+  ];
 
   return (
-    <section id="tours" className="py-20 bg-gradient-to-b from-background to-card/50">
+    <section
+      id="tours"
+      className="py-20 bg-gradient-to-b from-background to-card/50"
+    >
       <div className="container max-w-7xl mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">Explore Our Tour Categories</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">
+            Explore Our Tour Categories
+          </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-balance">
-            Choose from our carefully curated selection of authentic experiences, each led by certified local experts
-            who know their craft inside out.
+            Choose from our carefully curated selection of authentic
+            experiences, each led by certified local experts who know their
+            craft inside out.
           </p>
           <div className="mt-6 flex justify-center">
             <Badge variant="secondary" className="px-4 py-2">
@@ -100,7 +123,7 @@ export function TourCategories() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {categories.map((category, index) => {
-            const Icon = category.icon
+            const Icon = category.icon;
             return (
               <Card
                 key={category.title}
@@ -143,10 +166,14 @@ export function TourCategories() {
                       <Icon className="w-6 h-6 text-secondary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-primary">{category.title}</h3>
+                      <h3 className="text-xl font-bold text-primary">
+                        {category.title}
+                      </h3>
                       <div className="flex items-center mt-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-muted-foreground ml-1">{category.rating}</span>
+                        <span className="text-sm text-muted-foreground ml-1">
+                          {category.rating}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -156,22 +183,50 @@ export function TourCategories() {
                   </p>
 
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-2xl font-bold text-primary">{category.price}</div>
-                    <div className="text-sm text-muted-foreground">per person</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {category.price}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      per person
+                    </div>
                   </div>
-
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">View Tours</Button>
+                  <button
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-lg font-semibold mb-2 transition-all"
+                    onClick={() => {
+                      // Convert price string to number
+                      const numericPrice = Number(
+                        String(category.price).replace(/[^\d]/g, "")
+                      );
+                      dispatch({
+                        type: "ADD_ITEM",
+                        payload: {
+                          id: category.title,
+                          name: category.title + " Sample Package",
+                          price: numericPrice,
+                          image: category.image,
+                        },
+                      });
+                    }}
+                  >
+                    Add to Cart
+                  </button>
+                  <Button className="w-full bg-primary hover:bg-primary/80 text-primary-foreground">
+                    View Tours
+                  </Button>
                 </CardContent>
               </Card>
-            )
+            );
           })}
         </div>
 
         <div className="mt-16 text-center">
           <div className="bg-secondary/10 rounded-2xl p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-primary mb-4">Looking for Something Specific?</h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">
+              Looking for Something Specific?
+            </h3>
             <p className="text-muted-foreground mb-6">
-              Can't find the perfect tour? Our guides can create custom experiences tailored to your interests.
+              Can't find the perfect tour? Our guides can create custom
+              experiences tailored to your interests.
             </p>
             <Button
               size="lg"
@@ -184,5 +239,5 @@ export function TourCategories() {
         </div>
       </div>
     </section>
-  )
+  );
 }

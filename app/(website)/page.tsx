@@ -1,8 +1,8 @@
 "use client"
 import { TourCategories } from "@/components/TourCategories"
 import { GuideRegistration } from "@/components/guide-registration"
-import { BookingProcess } from "@/components/booking-process"
-import { Testimonials } from "@/components/testimonials"
+import { BookingProcess } from "@/components/GuideRegistration"
+import { Testimonials } from "@/components/Testimonials"
 import HeroCarousel from "@/components/HeroCarousel"
 
 

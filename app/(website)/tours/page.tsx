@@ -22,11 +22,13 @@ import {
 import { MapPin, Clock, Users, Star, Search } from "lucide-react";
 import Image from "next/image";
 import HeroSection from "@/components/all/CommonHeroSection";
+import { useCart } from "@/contexts/CardContext";
 
 export default function ToursPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const tours = [
     {
@@ -295,8 +297,23 @@ export default function ToursPage() {
                     <div className="text-2xl font-bold text-primary">
                       {tour.price}
                     </div>
-                    <Button className="bg-secondary hover:bg-secondary/90">
-                      Book Now
+                    <Button
+                      onClick={() => {
+                        const { dispatch } = useCart();
+                        dispatch({
+                          type: "ADD_ITEM",
+                          payload: {
+                            id: String(tour.id),
+                            name: tour.title,
+                            price: Number(tour.price.replace(/[^\d]/g, "")),
+                            quantity: 1,
+                            image: tour.image,
+                          },
+                        });
+                      }}
+                      className="px-6"
+                    >
+                      Add to Cart
                     </Button>
                   </CardFooter>
                 </Card>
