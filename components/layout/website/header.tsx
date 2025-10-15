@@ -17,9 +17,11 @@ import {
   Users,
   HelpCircle,
   Mail,
+  ShoppingCart,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Cart } from "@/components/cart/Cart";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,7 +57,10 @@ export function Header() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
         setIsProfileOpen(false);
       }
     };
@@ -103,7 +108,9 @@ export function Header() {
               </div>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-primary">BookMyTourGuide</h1>
+              <h1 className="text-xl font-bold text-primary">
+                BookMyTourGuide
+              </h1>
               <p className="text-xs text-gray-500 font-medium">
                 bookmytourguide.in
               </p>
@@ -136,6 +143,9 @@ export function Header() {
 
           {/* Right Section */}
           <div className="hidden lg:flex items-center space-x-4">
+            {/* Cart */}
+            <Cart />
+
             {/* Language Selector */}
             <div className="relative">
               <select
@@ -178,7 +188,9 @@ export function Header() {
                   {!isLoggedIn ? (
                     <>
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">Welcome!</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          Welcome!
+                        </p>
                         <p className="text-xs text-gray-500">
                           Sign in to access your account
                         </p>
@@ -210,8 +222,12 @@ export function Header() {
                             <User className="w-5 h-5 text-primary-foreground" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">John Doe</p>
-                            <p className="text-xs text-gray-500">john@example.com</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              John Doe
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              john@example.com
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -274,9 +290,11 @@ export function Header() {
                         : "text-gray-700 hover:text-primary hover:bg-gray-50"
                     }`}
                   >
-                    <Icon className={`w-6 h-6 ${
-                      active ? "text-primary" : "text-gray-500"
-                    }`} />
+                    <Icon
+                      className={`w-6 h-6 ${
+                        active ? "text-primary" : "text-gray-500"
+                      }`}
+                    />
                     <span className="text-lg font-semibold">{item.label}</span>
                     {active && (
                       <div className="ml-auto w-2 h-2 bg-primary rounded-full" />
@@ -288,7 +306,9 @@ export function Header() {
               <div className="pt-4 mt-4 border-t border-gray-200/50 space-y-4">
                 {/* Mobile Language Selector */}
                 <div className="px-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Language
+                  </label>
                   <select
                     value={selectedLanguage}
                     onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -328,8 +348,12 @@ export function Header() {
                           <User className="w-5 h-5 text-primary-foreground" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">John Doe</p>
-                          <p className="text-xs text-gray-500">john@example.com</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            John Doe
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            john@example.com
+                          </p>
                         </div>
                       </div>
                     </div>
