@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Calendar, CreditCard, MapPin, CheckCircle, Star } from "lucide-react"
 
-export function BookingProcess() {
+export function BookingProcess() {  
   const steps = [
     {
       icon: Search,
