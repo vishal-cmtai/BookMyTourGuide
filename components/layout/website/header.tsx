@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Globe,
   Menu,
@@ -18,19 +18,24 @@ import {
   HelpCircle,
   Mail,
   ShoppingCart,
+  Settings,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Cart } from "@/components/cart/Cart";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("EN");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const pathname = usePathname();
+  const router = useRouter();
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // Use the auth hook
+  const { user, isAuthenticated, loading, logout, getCurrentUser } = useAuth();
 
   const languages = [
     { code: "EN", name: "English" },
@@ -55,6 +60,21 @@ export function Header() {
     { href: "/contact", label: "Contact", icon: Mail },
   ];
 
+  // Check for user session on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!isAuthenticated && !loading) {
+        try {
+          await getCurrentUser();
+        } catch (error) {
+          // User not authenticated, ignore error
+        }
+      }
+    };
+
+    checkAuth();
+  }, [isAuthenticated, loading, getCurrentUser]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -74,19 +94,40 @@ export function Header() {
   }, [pathname]);
 
   const handleLogin = () => {
-    console.log("Login clicked");
+    router.push("/login");
     setIsProfileOpen(false);
   };
 
   const handleRegister = () => {
-    console.log("Register clicked");
+    router.push("/register");
     setIsProfileOpen(false);
   };
 
-  const handleLogout = () => {
-    console.log("Logout clicked");
-    setIsLoggedIn(false);
-    setIsProfileOpen(false);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsProfileOpen(false);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (user) {
+      // Redirect based on user role
+      switch (user.role) {
+        case 'guide':
+          router.push('/dashboard/guide');
+          break;
+        case 'admin':
+        case 'manager':
+          router.push('/dashboard/admin');
+          break;
+        default:
+          router.push('/dashboard/user');
+      }
+      setIsProfileOpen(false);
+    }
   };
 
   const isActive = (href: string) => pathname === href;
@@ -167,12 +208,17 @@ export function Header() {
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-3 p-2.5 rounded-xl hover:bg-gray-50 transition-all duration-300 border border-gray-200 group"
+                disabled={loading}
               >
                 <div className="relative">
-                  <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm">
-                    <User className="w-4 h-4 text-primary-foreground" />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-sm ${
+                    isAuthenticated ? "bg-primary" : "bg-gray-100"
+                  }`}>
+                    <User className={`w-4 h-4 ${
+                      isAuthenticated ? "text-primary-foreground" : "text-gray-600"
+                    }`} />
                   </div>
-                  {isLoggedIn && (
+                  {isAuthenticated && (
                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   )}
                 </div>
@@ -185,7 +231,7 @@ export function Header() {
 
               {isProfileOpen && (
                 <div className="absolute right-0 mt-3 w-56 bg-white/98 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 py-2 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
-                  {!isLoggedIn ? (
+                  {!isAuthenticated ? (
                     <>
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="text-sm font-medium text-gray-900">
@@ -221,34 +267,43 @@ export function Header() {
                           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
                             <User className="w-5 h-5 text-primary-foreground" />
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              John Doe
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {user?.name}
                             </p>
-                            <p className="text-xs text-gray-500">
-                              john@example.com
+                            <p className="text-xs text-gray-500 truncate">
+                              {user?.email}
+                            </p>
+                            <p className="text-xs text-primary font-medium capitalize">
+                              {user?.role}
                             </p>
                           </div>
                         </div>
                       </div>
+                      
                       <button
-                        onClick={() => setIsProfileOpen(false)}
+                        onClick={handleProfileClick}
                         className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200"
                       >
                         <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-600" />
+                          <Settings className="w-4 h-4 text-gray-600" />
                         </div>
-                        <span className="font-medium">Profile</span>
+                        <span className="font-medium">Dashboard</span>
                       </button>
+                      
                       <div className="mx-4 my-2 h-px bg-gray-200" />
+                      
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200"
+                        disabled={loading}
+                        className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 disabled:opacity-50"
                       >
                         <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                           <LogOut className="w-4 h-4 text-red-600" />
                         </div>
-                        <span className="font-medium">Logout</span>
+                        <span className="font-medium">
+                          {loading ? 'Logging out...' : 'Logout'}
+                        </span>
                       </button>
                     </>
                   )}
@@ -323,7 +378,7 @@ export function Header() {
                 </div>
 
                 {/* Mobile Profile Actions */}
-                {!isLoggedIn ? (
+                {!isAuthenticated ? (
                   <div className="px-4 space-y-3">
                     <button
                       onClick={handleLogin}
@@ -347,29 +402,41 @@ export function Header() {
                         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
                           <User className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            John Doe
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {user?.name}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            john@example.com
+                          <p className="text-xs text-gray-500 truncate">
+                            {user?.email}
+                          </p>
+                          <p className="text-xs text-primary font-medium capitalize">
+                            {user?.role}
                           </p>
                         </div>
                       </div>
                     </div>
+                    
                     <button
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => {
+                        handleProfileClick();
+                        setIsMenuOpen(false);
+                      }}
                       className="w-full flex items-center space-x-3 py-3 px-4 text-gray-700 hover:bg-gray-50 transition-colors rounded-xl font-medium"
                     >
-                      <User className="w-4 h-4" />
-                      <span>Profile</span>
+                      <Settings className="w-4 h-4" />
+                      <span>Dashboard</span>
                     </button>
+                    
                     <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center space-x-3 py-3 px-4 text-red-600 hover:bg-red-50 transition-colors rounded-xl font-medium"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      disabled={loading}
+                      className="w-full flex items-center space-x-3 py-3 px-4 text-red-600 hover:bg-red-50 transition-colors rounded-xl font-medium disabled:opacity-50"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Logout</span>
+                      <span>{loading ? 'Logging out...' : 'Logout'}</span>
                     </button>
                   </div>
                 )}
