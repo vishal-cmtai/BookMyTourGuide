@@ -1,4 +1,4 @@
-// useUser
+// lib/hooks/useUser.ts
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -9,12 +9,14 @@ import {
   getUsersByRole,
   createUser,
   updateUserById,
+  updateOwnProfile,
+  getOwnProfile,
   deleteUser,
   clearUsers,
   clearError,
+  clearCurrentUser,
 } from "@/lib/redux/userSlice";
 import {
-  User,
   GetUsersParams,
   CreateUserRequest,
   UpdateUserRequest,
@@ -34,7 +36,11 @@ export const useUser = () => {
     error,
     pagination,
 
-    // Actions
+    // Own Profile Actions (for regular users/guides)
+    getOwnProfile: () => dispatch(getOwnProfile()),
+    updateOwnProfile: (data: UpdateUserRequest) => dispatch(updateOwnProfile(data)),
+
+    // Admin Actions
     getAllUsers: (params?: GetUsersParams) => dispatch(getAllUsers(params)),
     getUserById: (id: string) => dispatch(getUserById(id)),
     getUsersByRole: (role: string) => dispatch(getUsersByRole(role)),
@@ -42,7 +48,10 @@ export const useUser = () => {
     updateUserById: (id: string, data: UpdateUserRequest) =>
       dispatch(updateUserById({ userId: id, data })),
     deleteUser: (id: string) => dispatch(deleteUser(id)),
+
+    // Utility Actions
     clearAllUsers: () => dispatch(clearUsers()),
     clearUserError: () => dispatch(clearError()),
+    clearCurrentUser: () => dispatch(clearCurrentUser()),
   };
 };

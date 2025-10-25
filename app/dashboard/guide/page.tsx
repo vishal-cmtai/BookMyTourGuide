@@ -1,244 +1,543 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { GuideProfile, GuideProfileFormData } from "@/types/auth"
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/lib/store";
+import {
+  getMyGuideProfile,
+  updateMyGuideProfile,
+  clearGuideError,
+} from "@/lib/redux/guideSlice";
+import { toast } from "react-toastify";
+import { CheckCircle, XCircle, AlertCircle, Save } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function GuideDashboard() {
-  const { 
-    user, 
-    isAuthenticated, 
-    loading, 
-    error,
-    guideProfile,
-    getCurrentUser, 
-    logout, 
-    getGuideProfile, 
-    updateGuideProfile,
-    clearUserError
-  } = useAuth();
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { myProfile, loading, error } = useSelector(
+    (state: RootState) => state.guide
+  );
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<GuideProfileFormData>({
-    name: '',
-    mobile: '',
-    dob: '',
-    state: '',
-    country: '',
-    age: 0,
-    languages: [],
-    experience: '',
-    specializations: [],
-    availability: [],
-    hourlyRate: 0,
-    description: '',
+  const [formData, setFormData] = useState({
+    name: "",
+    mobile: "",
+    dob: "",
+    state: "",
+    country: "",
+    age: "",
+    languages: "",
+    experience: "",
+    specializations: "",
+    availability: "",
+    hourlyRate: "",
+    description: "",
   });
   const [files, setFiles] = useState<{ photo?: File; license?: File }>({});
 
   useEffect(() => {
-    const initAuth = async () => {
-      if (!isAuthenticated) {
-        try {
-          await getCurrentUser();
-        } catch (error) {
-          // Redirect to login handled by useAuth
-        }
-      }
-    };
-
-    initAuth();
-  }, [isAuthenticated, getCurrentUser]);
-
-  useEffect(() => {
-    const loadGuideProfile = async () => {
-      if (user?.role === 'guide') {
-        try {
-          await getGuideProfile();
-        } catch (error) {
-          // Error handled by useAuth hook
-        }
-      }
-    };
-
-    if (user) {
-      loadGuideProfile();
+    if (user?.role !== "guide") {
+      router.push("/login");
+      return;
     }
-  }, [user, getGuideProfile]);
+    dispatch(getMyGuideProfile());
+  }, [dispatch, user, router]);
 
   useEffect(() => {
-    if (guideProfile) {
+    if (myProfile) {
+      const parseArray = (field: any) => {
+        if (!field) return "";
+        // If it's already an array, clean it
+        if (Array.isArray(field)) {
+          // handle ["[\"Hindi\"]"] case
+          if (
+            field.length === 1 &&
+            typeof field[0] === "string" &&
+            field[0].includes("[")
+          ) {
+            try {
+              const inner = JSON.parse(field[0]);
+              if (Array.isArray(inner)) return inner.join(", ");
+            } catch {
+              return field.join(", ");
+            }
+          }
+          return field.join(", ");
+        }
+        // If it's a string, try parsing JSON
+        if (typeof field === "string") {
+          try {
+            const arr = JSON.parse(field);
+            if (Array.isArray(arr)) return arr.join(", ");
+          } catch {
+            return field;
+          }
+        }
+        return "";
+      };
+
       setFormData({
-        name: guideProfile.name || '',
-        mobile: guideProfile.mobile || '',
-        dob: guideProfile.dob ? guideProfile.dob.split('T')[0] : '',
-        state: guideProfile.state || '',
-        country: guideProfile.country || '',
-        age: guideProfile.age || 0,
-        languages: guideProfile.languages || [],
-        experience: guideProfile.experience || '',
-        specializations: guideProfile.specializations || [],
-        availability: guideProfile.availability || [],
-        hourlyRate: guideProfile.hourlyRate || 0,
-        description: guideProfile.description || '',
+        name: myProfile.name || "",
+        mobile: myProfile.mobile || "",
+        dob: myProfile.dob ? myProfile.dob.split("T")[0] : "",
+        state: myProfile.state || "",
+        country: myProfile.country || "",
+        age: myProfile.age?.toString() || "",
+        languages: parseArray(myProfile.languages),
+        experience: myProfile.experience || "",
+        specializations: parseArray(myProfile.specializations),
+        availability: parseArray(myProfile.availability),
+        hourlyRate: myProfile.hourlyRate?.toString() || "",
+        description: myProfile.description || "",
       });
     }
-  }, [guideProfile]);
+  }, [myProfile]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearGuideError());
+    }
+  }, [error, dispatch]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleArrayInput = (name: keyof GuideProfileFormData, value: string) => {
-    const array = value.split(',').map(item => item.trim()).filter(Boolean);
-    setFormData(prev => ({ ...prev, [name]: array }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files: selectedFiles } = e.target;
     if (selectedFiles && selectedFiles[0]) {
-      const file = selectedFiles[0];
-      setFiles(prev => ({ ...prev, [name]: file }));
+      setFiles((prev) => ({ ...prev, [name]: selectedFiles[0] }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      const formDataToSend = new FormData();
-      
-      // Add all form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          formDataToSend.append(key, JSON.stringify(value));
-        } else if (value !== undefined && value !== null && value !== '') {
-          formDataToSend.append(key, value.toString());
-        }
-      });
-      
-      // Add files
-      if (files.photo) formDataToSend.append('photo', files.photo);
-      if (files.license) formDataToSend.append('license', files.license);
 
-      const result = await updateGuideProfile(formDataToSend);
-
-      if (result.success) {
-        setIsEditing(false);
-        clearUserError();
+    // Basic validation - only check if at least one field is filled
+    const hasAnyData = Object.entries(formData).some(([key, value]) => {
+      if (typeof value === "string") {
+        return value.trim() !== "";
       }
-    } catch (error) {
-      // Error handled by useAuth hook
+      return value !== null && value !== undefined;
+    });
+
+    if (!hasAnyData && !files.photo && !files.license) {
+      toast.error("Please fill at least one field to update");
+      return;
+    }
+
+    const formDataToSend = new FormData();
+
+    // Add all non-empty fields
+    Object.entries(formData).forEach(([key, value]) => {
+      const trimmedValue = typeof value === "string" ? value.trim() : value;
+
+      if (["languages", "specializations", "availability"].includes(key)) {
+        if (trimmedValue) {
+          const array = (trimmedValue as string)
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+          if (array.length > 0) {
+            formDataToSend.append(key, JSON.stringify(array));
+          }
+        }
+      } else if (trimmedValue !== "") {
+        formDataToSend.append(key, trimmedValue.toString());
+      }
+    });
+
+    // Add files if selected
+    if (files.photo) formDataToSend.append("photo", files.photo);
+    if (files.license) formDataToSend.append("license", files.license);
+
+    const result = await dispatch(updateMyGuideProfile(formDataToSend));
+
+    if (updateMyGuideProfile.fulfilled.match(result)) {
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+      setFiles({});
+      // Refresh profile
+      dispatch(getMyGuideProfile());
+    } else {
+      toast.error("Failed to update profile");
     }
   };
 
-  if (loading) {
+  const getProfileCompletionPercentage = () => {
+    if (!myProfile) return 0;
+    const fields = [
+      myProfile.name,
+      myProfile.mobile,
+      myProfile.dob,
+      myProfile.state,
+      myProfile.country,
+      myProfile.experience,
+      myProfile.description,
+      myProfile.license,
+      myProfile.photo,
+      myProfile.languages?.length,
+      myProfile.specializations?.length,
+    ];
+    const completed = fields.filter(Boolean).length;
+    return Math.round((completed / fields.length) * 100);
+  };
+
+  const getMissingFields = () => {
+    if (!myProfile) return [];
+    const missingFields: string[] = [];
+    if (!myProfile.name) missingFields.push("Full Name");
+    if (!myProfile.mobile) missingFields.push("Mobile Number");
+    if (!myProfile.dob) missingFields.push("Date of Birth");
+    if (!myProfile.state) missingFields.push("State");
+    if (!myProfile.country) missingFields.push("Country");
+    if (!myProfile.experience) missingFields.push("Experience");
+    if (!myProfile.description) missingFields.push("Description");
+    if (!myProfile.license) missingFields.push("License/Certificate");
+    if (!myProfile.photo) missingFields.push("Profile Photo");
+    if (!myProfile.languages?.length) missingFields.push("Languages");
+    if (!myProfile.specializations?.length)
+      missingFields.push("Specializations");
+    return missingFields;
+  };
+
+  if (loading && !myProfile) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground">Loading your profile...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-primary">Guide Dashboard</h1>
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Profile Completion
+              </h3>
+              <AlertCircle className="w-5 h-5 text-blue-500" />
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-foreground">Welcome, {user?.name}</span>
-              <Button onClick={logout} variant="destructive" size="sm">
-                Logout
-              </Button>
+            <p className="text-3xl font-bold text-foreground">
+              {getProfileCompletionPercentage()}%
+            </p>
+            <div className="mt-3 w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all"
+                style={{ width: `${getProfileCompletionPercentage()}%` }}
+              />
             </div>
           </div>
-        </div>
-      </nav>
 
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Approval Status */}
-        {guideProfile && !guideProfile.isApproved && (
-          <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 animate-fade-in-up">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <div>
+          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Approval Status
+              </h3>
+              {myProfile?.isApproved ? (
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              ) : (
+                <XCircle className="w-5 h-5 text-yellow-500" />
+              )}
+            </div>
+            <p className="text-3xl font-bold text-foreground">
+              {myProfile?.isApproved ? "Approved" : "Pending"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {myProfile?.isApproved
+                ? "You're ready for bookings"
+                : "Complete your profile for approval"}
+            </p>
+          </div>
+
+          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Profile Status
+              </h3>
+              {myProfile?.profileComplete ? (
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-orange-500" />
+              )}
+            </div>
+            <p className="text-3xl font-bold text-foreground">
+              {myProfile?.profileComplete ? "Complete" : "Incomplete"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {myProfile?.profileComplete
+                ? "All information provided"
+                : `${getMissingFields().length} fields remaining`}
+            </p>
+          </div>
+        </div>
+
+        {/* Completion Alert */}
+        {!myProfile?.profileComplete && (
+          <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
                 <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  Account Pending Approval
+                  Complete Your Profile
                 </h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  Your guide account is currently under review.
+                  Your profile is {getProfileCompletionPercentage()}% complete.
+                  You can update your profile partially - fill fields as you go!
                 </p>
+                {getMissingFields().length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+                      Missing fields:
+                    </p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                      {getMissingFields().join(", ")}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Profile Section */}
-        <div className="bg-card rounded-xl shadow-sm border border-border p-6 animate-fade-in-up animate-delay-200">
+        {/* Profile Form */}
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-foreground">Profile Information</h2>
+            <h2 className="text-2xl font-bold text-foreground">
+              Profile Information
+            </h2>
             <Button
               onClick={() => setIsEditing(!isEditing)}
               variant={isEditing ? "outline" : "default"}
-              className={isEditing ? "" : "red-gradient"}
+              disabled={loading}
             >
-              {isEditing ? 'Cancel' : 'Edit Profile'}
+              {isEditing ? "Cancel" : "Edit Profile"}
             </Button>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {error}
-            </div>
-          )}
-
           {isEditing ? (
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Note:</strong> You can save partial information. Fill
+                  out the fields you have now and come back later to complete
+                  the rest. Fields marked with * are required for final
+                  approval.
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Full Name</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Full Name *
+                  </label>
                   <Input
-                    type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Your full name"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Mobile Number</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Mobile Number *
+                  </label>
                   <Input
-                    type="tel"
                     name="mobile"
+                    type="tel"
                     value={formData.mobile}
                     onChange={handleInputChange}
-                    placeholder="Your mobile number"
+                    placeholder="Your contact number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Date of Birth *
+                  </label>
+                  <Input
+                    name="dob"
+                    type="date"
+                    value={formData.dob}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Age
+                  </label>
+                  <Input
+                    name="age"
+                    type="number"
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    placeholder="Your age"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    State *
+                  </label>
+                  <Input
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                    placeholder="Your state"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Country *
+                  </label>
+                  <Input
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    placeholder="Your country"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Experience *
+                  </label>
+                  <Input
+                    name="experience"
+                    value={formData.experience}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 5 years"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Hourly Rate (₹)
+                  </label>
+                  <Input
+                    name="hourlyRate"
+                    type="number"
+                    value={formData.hourlyRate}
+                    onChange={handleInputChange}
+                    placeholder="Your rate per hour"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Languages * (comma-separated)
+                </label>
+                <Input
+                  name="languages"
+                  value={formData.languages}
+                  onChange={handleInputChange}
+                  placeholder="e.g., English, Hindi, Spanish"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Specializations * (comma-separated)
+                </label>
+                <Input
+                  name="specializations"
+                  value={formData.specializations}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Historical tours, Adventure, Cultural experiences"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Availability (comma-separated)
+                </label>
+                <Input
+                  name="availability"
+                  value={formData.availability}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Weekends, Weekdays, Evenings"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Description *
+                </label>
+                <Textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={4}
+                  placeholder="Tell us about yourself and your guiding experience..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Profile Photo *{" "}
+                    {myProfile?.photo && (
+                      <span className="text-green-600">(✓ Uploaded)</span>
+                    )}
+                  </label>
+                  <Input
+                    name="photo"
+                    type="file"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                  />
+                  {files.photo && (
+                    <p className="text-xs text-green-600">
+                      New photo selected: {files.photo.name}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    License/Certificate *{" "}
+                    {myProfile?.license && (
+                      <span className="text-green-600">(✓ Uploaded)</span>
+                    )}
+                  </label>
+                  <Input
+                    name="license"
+                    type="file"
+                    onChange={handleFileChange}
+                    accept="image/*,.pdf"
+                  />
+                  {files.license && (
+                    <p className="text-xs text-green-600">
+                      New license selected: {files.license.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setFiles({});
+                  }}
+                  disabled={loading}
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="red-gradient"
-                >
-                  {loading ? 'Updating...' : 'Update Profile'}
+                <Button type="submit" disabled={loading}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {loading ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </form>
@@ -246,12 +545,157 @@ export default function GuideDashboard() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
-                  <p className="text-foreground">{guideProfile?.name || 'Not provided'}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Name
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.name || (
+                      <span className="text-red-500">Not provided</span>
+                    )}
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Mobile</h3>
-                  <p className="text-foreground">{guideProfile?.mobile || 'Not provided'}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Email
+                  </h3>
+                  <p className="text-foreground">{myProfile?.email}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Mobile
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.mobile || (
+                      <span className="text-red-500">Not provided</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Date of Birth
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.dob ? (
+                      new Date(myProfile.dob).toLocaleDateString()
+                    ) : (
+                      <span className="text-red-500">Not provided</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    State
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.state || (
+                      <span className="text-red-500">Not provided</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Country
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.country || (
+                      <span className="text-red-500">Not provided</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Experience
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.experience || (
+                      <span className="text-red-500">Not provided</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Hourly Rate
+                  </h3>
+                  <p className="text-foreground">
+                    {myProfile?.hourlyRate ? (
+                      `₹${myProfile.hourlyRate}`
+                    ) : (
+                      <span className="text-muted-foreground">Not set</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Languages
+                </h3>
+                <p className="text-foreground">
+                  {myProfile?.languages?.join(", ") || (
+                    <span className="text-red-500">Not provided</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Specializations
+                </h3>
+                <p className="text-foreground">
+                  {myProfile?.specializations?.join(", ") || (
+                    <span className="text-red-500">Not provided</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Availability
+                </h3>
+                <p className="text-foreground">
+                  {myProfile?.availability?.join(", ") || (
+                    <span className="text-muted-foreground">Not provided</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Description
+                </h3>
+                <p className="text-foreground whitespace-pre-wrap">
+                  {myProfile?.description || (
+                    <span className="text-red-500">Not provided</span>
+                  )}
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Profile Photo
+                  </h3>
+                  {myProfile?.photo ? (
+                    <img
+                      src={myProfile.photo}
+                      alt="Profile"
+                      className="mt-2 w-32 h-32 object-cover rounded-lg border border-border"
+                    />
+                  ) : (
+                    <p className="text-red-500">Not uploaded</p>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    License/Certificate
+                  </h3>
+                  {myProfile?.license ? (
+                    <a
+                      href={myProfile.license}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center mt-2"
+                    >
+                      View License →
+                    </a>
+                  ) : (
+                    <p className="text-red-500">Not uploaded</p>
+                  )}
                 </div>
               </div>
             </div>

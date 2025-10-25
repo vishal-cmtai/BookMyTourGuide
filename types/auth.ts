@@ -1,8 +1,10 @@
+// types/auth.ts
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'guide' | 'manager';
+  mobile?: string; // Added mobile field
+  role: "admin" | "user" | "guide" | "manager";
   avatar?: string;
   isActive: boolean;
   guideProfile?: string;
@@ -11,28 +13,11 @@ export interface User {
 }
 
 export interface GuideProfile {
+  _id: string;
   user: string;
   name: string;
   mobile: string;
   email: string;
-  dob?: string;
-  state?: string;
-  country?: string;
-  age?: number;
-  languages: string[];
-  experience?: string;
-  specializations: string[];
-  availability: string[];
-  hourlyRate?: number;
-  description?: string;
-  license?: string;
-  photo?: string;
-  isApproved: boolean;
-}
-
-export interface UpdateGuideProfileData {
-  name?: string;
-  mobile?: string;
   dob?: string;
   state?: string;
   country?: string;
@@ -43,11 +28,12 @@ export interface UpdateGuideProfileData {
   availability?: string[];
   hourlyRate?: number;
   description?: string;
-}
-
-export interface GuideProfileFormData extends UpdateGuideProfileData {
-  photo?: File;
-  license?: File;
+  license?: string;
+  photo?: string;
+  isApproved: boolean;
+  profileComplete: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthState {
@@ -61,7 +47,6 @@ export interface AuthState {
 export interface UserState {
   users: User[];
   currentUser: User | null;
-  guideProfile: GuideProfile | null;
   loading: boolean;
   error: string | null;
   pagination: {
@@ -80,35 +65,28 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  // role: 'user' | 'guide';
+  role?: "user" | "guide";
   mobile?: string;
-  dob?: string;
-  state?: string;
-  country?: string;
-  age?: number;
-  languages?: string[];
-  experience?: string;
-  specializations?: string[];
-  availability?: string[];
-  hourlyRate?: number;
-  description?: string;
 }
 
 export interface CreateUserRequest {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'user' | 'guide' | 'manager';
+  role: "admin" | "user" | "guide" | "manager";
+  mobile?: string;
   avatar?: string;
   isActive?: boolean;
 }
 
 export interface UpdateUserRequest {
   name?: string;
-  email?: string;
+  mobile?: string;
   password?: string;
-  role?: 'admin' | 'user' | 'guide' | 'manager';
   avatar?: string;
+  // Fields below are admin-only (cannot be updated via /me endpoint)
+  email?: string;
+  role?: "admin" | "user" | "guide" | "manager";
   isActive?: boolean;
 }
 
@@ -139,4 +117,5 @@ export interface ApiResponse<T = any> {
   total?: number;
   page?: number;
   totalPages?: number;
+  count?: number;
 }

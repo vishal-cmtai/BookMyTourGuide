@@ -1,106 +1,69 @@
-// app/(auth)/register/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { RegisterRequest } from "@/types/auth";
+import { toast } from "react-toastify";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [userType, setUserType] = useState<"user" | "guide" | "">("");
-  const [formData, setFormData] = useState<RegisterRequest>({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    mobile: "",
-    dob: "",
-    state: "",
-    country: "",
-    age: 0,
-    languages: [],
-    experience: "",
-    specializations: [],
-    availability: [],
-    hourlyRate: 0,
-    description: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [files, setFiles] = useState<{ photo?: File; license?: File }>({});
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
-
-  // Create refs for OTP inputs
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const { sendOtp, verifyAndRegister, loading, error, clearAuthError } =
-    useAuth();
-  const router = useRouter();
+  // The useAuth hook provides all necessary functions and state
+  const { sendOtp, verifyAndRegister, loading, clearAuthError } = useAuth();
 
-  // Clear errors when component unmounts
   useEffect(() => {
-    return () => {
-      clearAuthError();
-    };
+    // Clear any previous auth errors when the component loads
+    clearAuthError();
   }, [clearAuthError]);
 
-  // Focus first OTP input when step changes to 2
   useEffect(() => {
+    // Auto-focus the first OTP input when the view changes
     if (step === 2 && otpRefs.current[0]) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         otpRefs.current[0]?.focus();
-      }, 100);
+      }, 150);
+      return () => clearTimeout(timer);
     }
   }, [step]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear errors when user starts typing
-    if (error) {
-      clearAuthError();
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files: selectedFiles } = e.target;
-    if (selectedFiles && selectedFiles[0]) {
-      setFiles((prev) => ({ ...prev, [name]: selectedFiles[0] }));
-    }
-  };
-
-  const handleArrayInput = (name: keyof RegisterRequest, value: string) => {
-    const array = value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    setFormData((prev) => ({ ...prev, [name]: array }));
-  };
-
-  // Improved OTP handling
   const handleOtpChange = (index: number, value: string) => {
-    // Only allow single digit
-    if (value.length > 1) {
-      value = value.slice(0, 1);
-    }
+    // Get only the last character typed (in case of multiple characters)
+    const digit = value.slice(-1);
 
-    // Only allow numbers
-    if (value && !/^\d$/.test(value)) {
+    // Handle empty value (deletion)
+    if (!digit) {
+      const newOtp = [...otp];
+      newOtp[index] = "";
+      setOtp(newOtp);
       return;
     }
 
+    // Only allow numbers
+    if (!/^\d$/.test(digit)) return;
+
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = digit;
     setOtp(newOtp);
 
-    // Auto-focus next input if value entered
-    if (value && index < 5) {
+    // Auto-move to next input when a digit is entered
+    if (index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
   };
@@ -109,498 +72,302 @@ export default function RegisterPage() {
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
+    const key = e.key;
+
+    // Handle number keys directly
+    if (/^\d$/.test(key)) {
+      e.preventDefault();
+      const newOtp = [...otp];
+      newOtp[index] = key;
+      setOtp(newOtp);
+
+      // Move to next input
+      if (index < 5) {
+        otpRefs.current[index + 1]?.focus();
+      }
+      return;
+    }
+
     // Handle backspace
-    if (e.key === "Backspace") {
+    if (key === "Backspace") {
       e.preventDefault();
       const newOtp = [...otp];
 
-      if (newOtp[index]) {
-        // Clear current field
+      if (otp[index]) {
+        // Clear current input if it has value
         newOtp[index] = "";
         setOtp(newOtp);
       } else if (index > 0) {
-        // Move to previous field and clear it
+        // Move to previous input and clear it
         newOtp[index - 1] = "";
         setOtp(newOtp);
         otpRefs.current[index - 1]?.focus();
       }
-    }
-
-    // Handle arrow keys
-    if (e.key === "ArrowLeft" && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    } else if (e.key === "ArrowRight" && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-  };
-
-  // Handle paste
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pasteData = e.clipboardData.getData("text").trim();
-
-    // Only allow numbers and limit to 6 digits
-    if (!/^\d{1,6}$/.test(pasteData)) {
-      toast.error("Please paste only numbers");
       return;
     }
 
-    const digits = pasteData.split("").slice(0, 6);
-    const newOtp = new Array(6).fill("");
+    // Handle Delete key
+    if (key === "Delete") {
+      e.preventDefault();
+      const newOtp = [...otp];
+      newOtp[index] = "";
+      setOtp(newOtp);
+      return;
+    }
 
-    digits.forEach((digit, index) => {
-      newOtp[index] = digit;
-    });
+    // Handle left arrow key
+    if (key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      otpRefs.current[index - 1]?.focus();
+      return;
+    }
 
-    setOtp(newOtp);
+    // Handle right arrow key
+    if (key === "ArrowRight" && index < 5) {
+      e.preventDefault();
+      otpRefs.current[index + 1]?.focus();
+      return;
+    }
+  };
 
-    // Focus the next empty field or last field
-    const nextIndex = Math.min(digits.length, 5);
-    otpRefs.current[nextIndex]?.focus();
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text/plain").trim();
+
+    // Only accept 6-digit numbers
+    if (/^\d{6}$/.test(pastedData)) {
+      const newOtp = pastedData.split("");
+      setOtp(newOtp);
+      // Focus the last input
+      setTimeout(() => {
+        otpRefs.current[5]?.focus();
+      }, 10);
+    } else {
+      toast.error("Please paste a valid 6-digit OTP");
+    }
   };
 
   const validateStep1 = (): boolean => {
     if (!userType) {
-      toast.error("Please select your account type", {
-        ariaLabel: "User type validation error",
-      });
+      toast.error("Please select an account type: Tourist or Tour Guide.");
       return false;
     }
-
     if (!formData.name.trim()) {
-      toast.error("Full name is required", {
-        ariaLabel: "Name validation error",
-      });
+      toast.error("Please enter your full name.");
       return false;
     }
-
-    if (!formData.email.trim()) {
-      toast.error("Email is required", { ariaLabel: "Email validation error" });
-      return false;
-    }
-
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      toast.error("Please enter a valid email address", {
-        ariaLabel: "Email format error",
-      });
+      toast.error("Please enter a valid email address.");
       return false;
     }
-
-    if (!formData.password.trim()) {
-      toast.error("Password is required", {
-        ariaLabel: "Password validation error",
-      });
-      return false;
-    }
-
     if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters long", {
-        ariaLabel: "Password length error",
-      });
+      toast.error("Password must be at least 6 characters long.");
       return false;
     }
-
     if (formData.password !== confirmPassword) {
-      toast.error("Passwords do not match", {
-        ariaLabel: "Password mismatch error",
-      });
+      toast.error("Passwords do not match.");
       return false;
     }
-
-    // Guide-specific validation
-    if (userType === "guide") {
-      if (!formData.mobile.trim()) {
-        toast.error("Mobile number is required for guides", {
-          ariaLabel: "Mobile validation error",
-        });
-        return false;
-      }
-
-      if (!formData.experience.trim()) {
-        toast.error("Experience is required for guides", {
-          ariaLabel: "Experience validation error",
-        });
-        return false;
-      }
-    }
-
     return true;
   };
 
   const handleSendOTP = async () => {
     if (!validateStep1()) return;
-    clearAuthError();
 
-    try {
-      const result = await sendOtp({ email: formData.email });
-      if (result.type === "auth/sendOTP/fulfilled") {
-        setStep(2);
-        setOtp(new Array(6).fill(""));
-      }
-    } catch (error) {
-      console.error("OTP send error:", error);
+    const result = await sendOtp({ email: formData.email });
+    if (result.meta.requestStatus === "fulfilled") {
+      setStep(2);
     }
   };
 
   const handleVerifyAndRegister = async () => {
     const otpValue = otp.join("");
-
     if (otpValue.length !== 6) {
-      toast.error("Please enter the complete 6-digit OTP", {
-        ariaLabel: "OTP validation error",
-      });
+      toast.error("Please enter the complete 6-digit OTP.");
       return;
     }
 
-    if (!/^\d{6}$/.test(otpValue)) {
-      toast.error("OTP must contain only numbers", {
-        ariaLabel: "OTP format error",
-      });
-      return;
-    }
+    const formDataToSend = new FormData();
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("password", formData.password);
+    formDataToSend.append("otp", otpValue);
+    formDataToSend.append("role", userType);
 
-    try {
-      const formDataToSend = new FormData();
+    const result = await verifyAndRegister(formDataToSend);
 
-      // Add all form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          formDataToSend.append(key, JSON.stringify(value));
-        } else if (value !== undefined && value !== null && value !== "") {
-          formDataToSend.append(key, value.toString());
-        }
-      });
-
-      formDataToSend.append("otp", otpValue);
-      formDataToSend.append("role", userType);
-
-      // Add files for guides
-      if (userType === "guide") {
-        if (files.photo) formDataToSend.append("photo", files.photo);
-        if (files.license) formDataToSend.append("license", files.license);
-      }
-
-      const result = await verifyAndRegister(formDataToSend);
-
-      if (result.type === "auth/verifyOtpAndRegister/fulfilled") {
-        setTimeout(() => {
-          router.push("/login?message=Registration successful! Please login.");
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
+    if (result.meta.requestStatus === "fulfilled") {
+      setTimeout(() => {
+        router.push("/login");
+      }, 1000);
     }
   };
 
-  const handleBackToForm = () => {
-    setStep(1);
-    setOtp(new Array(6).fill(""));
-    clearAuthError();
+  const handleResendOTP = async () => {
+    const result = await sendOtp({ email: formData.email });
+    if (result.meta.requestStatus === "fulfilled") {
+      setOtp(new Array(6).fill(""));
+      setTimeout(() => {
+        otpRefs.current[0]?.focus();
+      }, 150);
+    }
   };
 
   return (
-    <div className="bg-card rounded-xl shadow-lg p-8 border border-border animate-scale-in max-h-[90vh] overflow-y-auto">
+    <div className="bg-card rounded-xl shadow-lg p-8 border border-border animate-scale-in">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Create Account
+        <h1 className="text-3xl font-bold text-foreground">
+          Create an Account
         </h1>
-        <p className="text-muted-foreground">Join our platform today</p>
+        <p className="text-muted-foreground">
+          Join our community of travelers and guides.
+        </p>
       </div>
 
       {step === 1 && (
         <div className="space-y-6">
-          {/* User Type Selection */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-foreground">
-              I am a:
+              I am registering as a:
             </label>
             <div className="grid grid-cols-2 gap-4">
-              <label className="flex items-center p-4 border border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                <input
-                  type="radio"
-                  value="user"
-                  checked={userType === "user"}
-                  onChange={(e) => setUserType(e.target.value as "user")}
-                  className="sr-only"
-                />
-                <div
-                  className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    userType === "user"
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground"
-                  }`}
-                >
-                  {userType === "user" && (
-                    <div className="w-2 h-2 bg-white rounded-full m-0.5" />
-                  )}
-                </div>
-                <span className="text-sm font-medium">Tourist/Traveler</span>
-              </label>
-              <label className="flex items-center p-4 border border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                <input
-                  type="radio"
-                  value="guide"
-                  checked={userType === "guide"}
-                  onChange={(e) => setUserType(e.target.value as "guide")}
-                  className="sr-only"
-                />
-                <div
-                  className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    userType === "guide"
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground"
-                  }`}
-                >
-                  {userType === "guide" && (
-                    <div className="w-2 h-2 bg-white rounded-full m-0.5" />
-                  )}
-                </div>
-                <span className="text-sm font-medium">Tour Guide</span>
-              </label>
+              <Button
+                type="button"
+                variant={userType === "user" ? "default" : "outline"}
+                onClick={() => setUserType("user")}
+                disabled={loading}
+              >
+                Tourist
+              </Button>
+              <Button
+                type="button"
+                variant={userType === "guide" ? "default" : "outline"}
+                onClick={() => setUserType("guide")}
+                disabled={loading}
+              >
+                Tour Guide
+              </Button>
             </div>
           </div>
-
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Full Name *
-              </label>
-              <Input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter your full name"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Email *
-              </label>
-              <Input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Password *
-                </label>
-                <Input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Create password (min 6 chars)"
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Confirm Password *
-                </label>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm password"
-                  required
-                  disabled={loading}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Guide-specific fields */}
-          {userType === "guide" && (
-            <div className="space-y-4 p-4 bg-muted/20 rounded-lg border border-border">
-              <h3 className="text-lg font-medium text-foreground">
-                Guide Information
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Mobile Number *
-                  </label>
-                  <Input
-                    type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
-                    placeholder="Your mobile number"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Experience *
-                  </label>
-                  <Input
-                    type="text"
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 5 years"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Languages (comma-separated)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g., English, Spanish, French"
-                  onChange={(e) =>
-                    handleArrayInput("languages", e.target.value)
-                  }
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Specializations (comma-separated)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g., Historical sites, Adventure tours"
-                  onChange={(e) =>
-                    handleArrayInput("specializations", e.target.value)
-                  }
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Photo
-                  </label>
-                  <Input
-                    type="file"
-                    name="photo"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    License/Certificate
-                  </label>
-                  <Input
-                    type="file"
-                    name="license"
-                    onChange={handleFileChange}
-                    accept="image/*,.pdf"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
+          <Input
+            name="name"
+            placeholder="Full Name *"
+            value={formData.name}
+            onChange={handleInputChange}
+            disabled={loading}
+          />
+          <Input
+            name="email"
+            type="email"
+            placeholder="Email Address *"
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={loading}
+          />
+          <Input
+            name="password"
+            type="password"
+            placeholder="Create Password *"
+            value={formData.password}
+            onChange={handleInputChange}
+            disabled={loading}
+          />
+          <Input
+            type="password"
+            placeholder="Confirm Password *"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
+          />
           <Button
+            type="button"
             onClick={handleSendOTP}
             disabled={loading || !userType}
-            className="w-full red-gradient"
+            className="w-full"
             size="lg"
           >
-            {loading ? "Sending OTP..." : "Send OTP"}
+            {loading ? "Sending OTP..." : "Continue"}
           </Button>
         </div>
       )}
 
       {step === 2 && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-lg font-medium text-foreground">Enter OTP</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              We've sent a 6-digit code to {formData.email}
-            </p>
-          </div>
-
-          <div className="flex justify-center space-x-3">
+        <div className="space-y-6 text-center">
+          <h3 className="text-lg font-medium text-foreground">
+            Verify Your Email
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            A 6-digit code was sent to <strong>{formData.email}</strong>
+          </p>
+          <div className="flex justify-center space-x-2">
             {otp.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => (otpRefs.current[index] = el)}
+                ref={(el) => {
+                  otpRefs.current[index] = el;
+                }}
                 type="text"
-                inputMode="numeric"
                 maxLength={1}
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={digit}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                onPaste={handleOtpPaste}
-                onFocus={(e) => e.target.select()}
-                className="w-14 h-14 text-center border-2 border-border rounded-lg text-lg font-semibold focus:border-primary focus:outline-none transition-colors bg-background"
+                onPaste={index === 0 ? handleOtpPaste : undefined}
+                className="w-12 h-14 text-center text-lg font-semibold border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={loading}
                 autoComplete="off"
+                aria-label={`OTP digit ${index + 1}`}
               />
             ))}
           </div>
-
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Entered OTP:{" "}
-              <span className="font-mono font-bold">{otp.join("")}</span>
-            </p>
-          </div>
-
           <div className="space-y-3">
             <Button
+              type="button"
               onClick={handleVerifyAndRegister}
               disabled={loading || otp.join("").length !== 6}
-              className="w-full red-gradient"
+              className="w-full"
               size="lg"
             >
-              {loading ? "Verifying..." : "Verify & Register"}
+              {loading ? "Verifying..." : "Create Account"}
             </Button>
-
-            <Button
-              onClick={handleBackToForm}
-              variant="outline"
-              className="w-full"
-              disabled={loading}
-            >
-              Back to form
-            </Button>
+            <div className="flex items-center justify-center space-x-2 text-sm">
+              <span className="text-muted-foreground">
+                Didn't receive code?
+              </span>
+              <button
+                type="button"
+                onClick={handleResendOTP}
+                disabled={loading}
+                className="text-primary hover:underline font-medium disabled:opacity-50"
+              >
+                Resend OTP
+              </button>
+            </div>
           </div>
+          <Button
+            type="button"
+            onClick={() => {
+              setStep(1);
+              setOtp(new Array(6).fill(""));
+            }}
+            variant="link"
+            disabled={loading}
+          >
+            Go Back
+          </Button>
         </div>
       )}
 
-      <div className="mt-8 text-center">
-        <p className="text-muted-foreground text-sm">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-primary hover:text-primary/80 font-medium"
-          >
-            Sign in
-          </Link>
-        </p>
-      </div>
+      <p className="mt-8 text-center text-muted-foreground text-sm">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="text-primary hover:underline font-medium"
+        >
+          Sign In
+        </Link>
+      </p>
     </div>
   );
 }
