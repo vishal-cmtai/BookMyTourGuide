@@ -32,6 +32,12 @@ class ApiService {
     return response.data;
   }
 
+  // PATCH method
+  async patch(endpoint: string, data?: any, config?: any) {
+    const response = await this.api.patch(endpoint, data, config);
+    return response.data;
+  }
+
   async delete(endpoint: string, config?: any) {
     const response = await this.api.delete(endpoint, config);
     return response.data;
