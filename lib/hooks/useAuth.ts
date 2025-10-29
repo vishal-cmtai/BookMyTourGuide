@@ -1,3 +1,4 @@
+// lib/hooks/useAuth.ts
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +10,7 @@ import {
   sendOTP,
   getCurrentUser,
   logoutUser,
+  refreshToken,
   updateUser,
   setError,
   clearAuth,
@@ -34,7 +36,9 @@ export const useAuth = () => {
     const result = await dispatch(loginUser(credentials));
     if (loginUser.fulfilled.match(result)) {
       const role = result.payload.data?.role ?? "user";
-      showToast.success(`Welcome back, ${result.payload.data?.name || "User"}!`);
+      showToast.success(
+        `Welcome back, ${result.payload.data?.name || "User"}!`
+      );
       router.push(ROLE_ROUTES[role] ?? "/dashboard");
     } else {
       showToast.error((result.payload as string) || "Login failed");
@@ -64,7 +68,21 @@ export const useAuth = () => {
 
   const fetchCurrentUser = async () => {
     const result = await dispatch(getCurrentUser());
-    if (getCurrentUser.rejected.match(result)) router.push("/login");
+    if (getCurrentUser.rejected.match(result)) {
+      // Only redirect to login if we're not already on auth pages
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.includes("/login") &&
+        !window.location.pathname.includes("/register")
+      ) {
+        router.push("/login");
+      }
+    }
+    return result;
+  };
+
+  const refresh = async () => {
+    const result = await dispatch(refreshToken());
     return result;
   };
 
@@ -83,6 +101,7 @@ export const useAuth = () => {
     sendOtp,
     verifyAndRegister,
     fetchCurrentUser,
+    refresh,
     logout,
     clearAuthError: () => dispatch(setError(null)),
     updateAuthUser: (data: Partial<User>) => dispatch(updateUser(data)),

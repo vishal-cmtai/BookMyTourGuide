@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { LoginRequest } from "@/types/auth";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<LoginRequest>({
@@ -17,8 +20,32 @@ export default function LoginPage() {
   });
 
   const { login, loading, error, clearAuthError } = useAuth();
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const ROLE_ROUTES: Record<string, string> = {
+        guide: "/dashboard/guide",
+        admin: "/dashboard/admin",
+        manager: "/dashboard/admin",
+        user: "/dashboard/user",
+      };
+      router.push(ROLE_ROUTES[user.role] ?? "/dashboard");
+    }
+  }, [isAuthenticated, user, router]);
+
+  // Show message from URL params (like session expired)
+  useEffect(() => {
+    if (message) {
+      toast.info(message);
+    }
+  }, [message]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -68,6 +95,15 @@ export default function LoginPage() {
 
     await login(formData);
   };
+
+  // Don't render the form if already authenticated (prevent flash)
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card rounded-xl shadow-lg p-8 border border-border animate-scale-in">

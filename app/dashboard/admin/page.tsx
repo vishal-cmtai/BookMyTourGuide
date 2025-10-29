@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { getAllUsers, deleteUser } from "@/lib/redux/userSlice";
 import {
   getAllGuides,
@@ -150,7 +150,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-card rounded-lg shadow-sm border border-border p-6">
