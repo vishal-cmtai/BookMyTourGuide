@@ -1,30 +1,30 @@
 // pages/admin/testimonials/index.tsx
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import {
-    fetchTestimonials,
-    createTestimonial,
-    updateTestimonial,
-    deleteTestimonial,
-    toggleTestimonialVisibility,
-    clearError,
-    setCurrentPage,
-    selectTestimonials,
-    selectTestimonialsLoading,
-    selectTestimonialsError,
-    selectTestimonialsPagination,
-    selectTestimonialsActionStates
+  fetchTestimonials,
+  createTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+  toggleTestimonialVisibility,
+  clearError,
+  setCurrentPage,
+  selectTestimonials,
+  selectTestimonialsLoading,
+  selectTestimonialsError,
+  selectTestimonialsPagination,
+  selectTestimonialsActionStates,
 } from "@/lib/redux/testimonialSlice";
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
   Star,
   MessageSquare,
   User,
@@ -33,199 +33,223 @@ import {
   ChevronRight,
   RefreshCw,
   Download,
-  AlertCircle
-} from 'lucide-react'
-import { staggerContainer, fadeInUp } from '@/lib/motion-variants'
+  AlertCircle,
+} from "lucide-react";
+import { staggerContainer, fadeInUp } from "@/lib/motion-variants";
 
 interface TestimonialFormData {
-  name: string
-  message: string
-  rating: number
-  image: string
-  position: string
-  isVisible: boolean
+  name: string;
+  message: string;
+  rating: number;
+  image: string;
+  position: string;
+  isVisible: boolean;
 }
 
 export default function TestimonialsAdminPage() {
-  const dispatch = useDispatch<AppDispatch>()
-  const testimonials = useSelector(selectTestimonials)
-  const isLoading = useSelector(selectTestimonialsLoading)
-  const error = useSelector(selectTestimonialsError)
-  const pagination = useSelector(selectTestimonialsPagination)
-  const actionStates = useSelector(selectTestimonialsActionStates)
+  const dispatch = useDispatch<AppDispatch>();
+  const testimonials = useSelector(selectTestimonials);
+  const isLoading = useSelector(selectTestimonialsLoading);
+  const error = useSelector(selectTestimonialsError);
+  const pagination = useSelector(selectTestimonialsPagination);
+  const actionStates = useSelector(selectTestimonialsActionStates);
 
-  const [currentPage, setCurrentPageState] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [visibilityFilter, setVisibilityFilter] = useState<boolean | undefined>(undefined)
-  const [showForm, setShowForm] = useState(false)
-  const [editingTestimonial, setEditingTestimonial] = useState<any>(null)
-  const [selectedTestimonials, setSelectedTestimonials] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPageState] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [visibilityFilter, setVisibilityFilter] = useState<boolean | undefined>(
+    undefined
+  );
+  const [showForm, setShowForm] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+  const [selectedTestimonials, setSelectedTestimonials] = useState<Set<string>>(
+    new Set()
+  );
   const [formData, setFormData] = useState<TestimonialFormData>({
-    name: '',
-    message: '',
+    name: "",
+    message: "",
     rating: 5,
-    image: '',
-    position: '',
-    isVisible: true
-  })
+    image: "",
+    position: "",
+    isVisible: true,
+  });
 
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchTerm])
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Fetch testimonials when parameters change
   useEffect(() => {
-    dispatch(fetchTestimonials({
-      page: currentPage,
-      limit: 10,
-      search: debouncedSearch,
-      visible: visibilityFilter
-    }))
-  }, [dispatch, currentPage, debouncedSearch, visibilityFilter])
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPageState(page)
-    dispatch(setCurrentPage(page))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      if (editingTestimonial) {
-        await dispatch(updateTestimonial({ 
-          id: editingTestimonial._id, 
-          testimonial: formData 
-        })).unwrap()
-      } else {
-        await dispatch(createTestimonial(formData)).unwrap()
-      }
-      resetForm()
-      // Refresh the list
-      dispatch(fetchTestimonials({
+    dispatch(
+      fetchTestimonials({
         page: currentPage,
         limit: 10,
         search: debouncedSearch,
-        visible: visibilityFilter
-      }))
+        visible: visibilityFilter,
+      })
+    );
+  }, [dispatch, currentPage, debouncedSearch, visibilityFilter]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPageState(page);
+    dispatch(setCurrentPage(page));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingTestimonial) {
+        await dispatch(
+          updateTestimonial({
+            id: editingTestimonial._id,
+            testimonial: formData,
+          })
+        ).unwrap();
+      } else {
+        await dispatch(createTestimonial(formData)).unwrap();
+      }
+      resetForm();
+      // Refresh the list
+      dispatch(
+        fetchTestimonials({
+          page: currentPage,
+          limit: 10,
+          search: debouncedSearch,
+          visible: visibilityFilter,
+        })
+      );
     } catch (error) {
-      console.error('Error saving testimonial:', error)
+      console.error("Error saving testimonial:", error);
     }
-  }
+  };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this testimonial?')) {
+    if (confirm("Are you sure you want to delete this testimonial?")) {
       try {
-        await dispatch(deleteTestimonial(id)).unwrap()
+        await dispatch(deleteTestimonial(id)).unwrap();
       } catch (error) {
-        console.error('Error deleting testimonial:', error)
+        console.error("Error deleting testimonial:", error);
       }
     }
-  }
+  };
 
-  const handleToggleVisibility = async (id: string, currentVisibility: boolean) => {
+  const handleToggleVisibility = async (
+    id: string,
+    currentVisibility: boolean
+  ) => {
     try {
-      await dispatch(toggleTestimonialVisibility({ id, isVisible: !currentVisibility })).unwrap()
+      await dispatch(
+        toggleTestimonialVisibility({ id, isVisible: !currentVisibility })
+      ).unwrap();
     } catch (error) {
-      console.error('Error toggling visibility:', error)
+      console.error("Error toggling visibility:", error);
     }
-  }
+  };
 
   const handleEdit = (testimonial: any) => {
-    setEditingTestimonial(testimonial)
+    setEditingTestimonial(testimonial);
     setFormData({
       name: testimonial.name,
       message: testimonial.message,
       rating: testimonial.rating || 5,
-      image: testimonial.image || '',
-      position: testimonial.position || '',
-      isVisible: testimonial.isVisible
-    })
-    setShowForm(true)
-  }
+      image: testimonial.image || "",
+      position: testimonial.position || "",
+      isVisible: testimonial.isVisible,
+    });
+    setShowForm(true);
+  };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      message: '',
+      name: "",
+      message: "",
       rating: 5,
-      image: '',
-      position: '',
-      isVisible: true
-    })
-    setEditingTestimonial(null)
-    setShowForm(false)
-  }
+      image: "",
+      position: "",
+      isVisible: true,
+    });
+    setEditingTestimonial(null);
+    setShowForm(false);
+  };
 
   const handleSelectTestimonial = (id: string) => {
-    const newSelected = new Set(selectedTestimonials)
+    const newSelected = new Set(selectedTestimonials);
     if (newSelected.has(id)) {
-      newSelected.delete(id)
+      newSelected.delete(id);
     } else {
-      newSelected.add(id)
+      newSelected.add(id);
     }
-    setSelectedTestimonials(newSelected)
-  }
+    setSelectedTestimonials(newSelected);
+  };
 
   const handleSelectAll = () => {
     if (selectedTestimonials.size === testimonials.length) {
-      setSelectedTestimonials(new Set())
+      setSelectedTestimonials(new Set());
     } else {
-      setSelectedTestimonials(new Set(testimonials.map(t => t._id)))
+      setSelectedTestimonials(new Set(testimonials.map((t) => t._id)));
     }
-  }
+  };
 
   const handleRefresh = () => {
-    dispatch(fetchTestimonials({
-      page: currentPage,
-      limit: 10,
-      search: debouncedSearch,
-      visible: visibilityFilter
-    }))
-  }
+    dispatch(
+      fetchTestimonials({
+        page: currentPage,
+        limit: 10,
+        search: debouncedSearch,
+        visible: visibilityFilter,
+      })
+    );
+  };
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+        className={`w-4 h-4 ${
+          i < rating ? "text-yellow-400 fill-current" : "text-gray-300"
+        }`}
       />
-    ))
-  }
+    ));
+  };
 
   const exportTestimonials = () => {
-    if (!testimonials.length) return
-    
-    const csvContent = [
-      ['Name', 'Position', 'Message', 'Rating', 'Visible', 'Created Date'].join(','),
-      ...testimonials.map(t => [
-        `"${t.name}"`,
-        `"${t.position || ''}"`,
-        `"${t.message.replace(/"/g, '""')}"`,
-        t.rating || 0,
-        t.isVisible,
-        new Date(t.createdAt).toLocaleDateString()
-      ].join(','))
-    ].join('\n')
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `testimonials-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    window.URL.revokeObjectURL(url)
-  }
+    if (!testimonials.length) return;
 
-  const visibleTestimonials = testimonials.filter(t => t.isVisible)
-  const avgRating = testimonials.length 
-    ? testimonials.reduce((acc, t) => acc + (t.rating || 0), 0) / testimonials.length
-    : 0
+    const csvContent = [
+      ["Name", "Position", "Message", "Rating", "Visible", "Created Date"].join(
+        ","
+      ),
+      ...testimonials.map((t) =>
+        [
+          `"${t.name}"`,
+          `"${t.position || ""}"`,
+          `"${t.message.replace(/"/g, '""')}"`,
+          t.rating || 0,
+          t.isVisible,
+          new Date(t.createdAt).toLocaleDateString(),
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `testimonials-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const visibleTestimonials = testimonials.filter((t) => t.isVisible);
+  const avgRating = testimonials.length
+    ? testimonials.reduce((acc, t) => acc + (t.rating || 0), 0) /
+      testimonials.length
+    : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -242,8 +266,12 @@ export default function TestimonialsAdminPage() {
             className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
           >
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Testimonials Management</h1>
-              <p className="text-muted-foreground mt-2">Manage customer testimonials and reviews</p>
+              <h1 className="text-3xl font-bold text-foreground">
+                Testimonials Management
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage customer testimonials and reviews
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <motion.button
@@ -254,9 +282,11 @@ export default function TestimonialsAdminPage() {
                 className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50"
                 title="Refresh"
               >
-                <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`}
+                />
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -267,7 +297,7 @@ export default function TestimonialsAdminPage() {
                 <Download className="w-4 h-4" />
                 Export CSV
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -310,28 +340,38 @@ export default function TestimonialsAdminPage() {
             <div className="bg-card rounded-xl p-6 border">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Testimonials</p>
-                  <p className="text-2xl font-bold text-foreground">{pagination.total}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Testimonials
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {pagination.total}
+                  </p>
                 </div>
                 <MessageSquare className="w-8 h-8 text-blue-500" />
               </div>
             </div>
-            
+
             <div className="bg-card rounded-xl p-6 border">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Visible</p>
-                  <p className="text-2xl font-bold text-green-600">{visibleTestimonials.length}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {visibleTestimonials.length}
+                  </p>
                 </div>
                 <Eye className="w-8 h-8 text-green-500" />
               </div>
             </div>
-            
+
             <div className="bg-card rounded-xl p-6 border">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Average Rating</p>
-                  <p className="text-2xl font-bold text-yellow-600">{avgRating.toFixed(1)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Average Rating
+                  </p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {avgRating.toFixed(1)}
+                  </p>
                 </div>
                 <Star className="w-8 h-8 text-yellow-500 fill-current" />
               </div>
@@ -361,11 +401,17 @@ export default function TestimonialsAdminPage() {
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-muted-foreground" />
                 <select
-                  value={visibilityFilter === undefined ? 'all' : visibilityFilter.toString()}
+                  value={
+                    visibilityFilter === undefined
+                      ? "all"
+                      : visibilityFilter.toString()
+                  }
                   onChange={(e) => {
-                    const value = e.target.value
-                    setVisibilityFilter(value === 'all' ? undefined : value === 'true')
-                    setCurrentPageState(1)
+                    const value = e.target.value;
+                    setVisibilityFilter(
+                      value === "all" ? undefined : value === "true"
+                    );
+                    setCurrentPageState(1);
                   }}
                   className="px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                 >
@@ -415,17 +461,32 @@ export default function TestimonialsAdminPage() {
                         <th className="px-6 py-4 text-left">
                           <input
                             type="checkbox"
-                            checked={testimonials.length > 0 && selectedTestimonials.size === testimonials.length}
+                            checked={
+                              testimonials.length > 0 &&
+                              selectedTestimonials.size === testimonials.length
+                            }
                             onChange={handleSelectAll}
                             className="w-4 h-4 rounded border-border"
                           />
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Customer</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Message</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Rating</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date</th>
-                        <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Actions</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                          Customer
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                          Message
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                          Rating
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                          Date
+                        </th>
+                        <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -440,8 +501,12 @@ export default function TestimonialsAdminPage() {
                           <td className="px-6 py-4">
                             <input
                               type="checkbox"
-                              checked={selectedTestimonials.has(testimonial._id)}
-                              onChange={() => handleSelectTestimonial(testimonial._id)}
+                              checked={selectedTestimonials.has(
+                                testimonial._id
+                              )}
+                              onChange={() =>
+                                handleSelectTestimonial(testimonial._id)
+                              }
                               className="w-4 h-4 rounded border-border"
                             />
                           </td>
@@ -459,9 +524,13 @@ export default function TestimonialsAdminPage() {
                                 )}
                               </div>
                               <div>
-                                <div className="font-semibold text-foreground">{testimonial.name}</div>
+                                <div className="font-semibold text-foreground">
+                                  {testimonial.name}
+                                </div>
                                 {testimonial.position && (
-                                  <div className="text-sm text-muted-foreground">{testimonial.position}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {testimonial.position}
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -486,21 +555,32 @@ export default function TestimonialsAdminPage() {
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              onClick={() => handleToggleVisibility(testimonial._id, testimonial.isVisible)}
+                              onClick={() =>
+                                handleToggleVisibility(
+                                  testimonial._id,
+                                  testimonial.isVisible
+                                )
+                              }
                               disabled={actionStates.toggling}
                               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                testimonial.isVisible 
-                                  ? 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200' 
-                                  : 'bg-red-100 text-red-800 border border-red-200 hover:bg-red-200'
+                                testimonial.isVisible
+                                  ? "bg-green-100 text-green-800 border border-green-200 hover:bg-green-200"
+                                  : "bg-red-100 text-red-800 border border-red-200 hover:bg-red-200"
                               } disabled:opacity-50`}
                             >
-                              {testimonial.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                              {testimonial.isVisible ? 'Visible' : 'Hidden'}
+                              {testimonial.isVisible ? (
+                                <Eye className="w-3 h-3" />
+                              ) : (
+                                <EyeOff className="w-3 h-3" />
+                              )}
+                              {testimonial.isVisible ? "Visible" : "Hidden"}
                             </motion.button>
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-muted-foreground">
-                              {new Date(testimonial.createdAt).toLocaleDateString()}
+                              {new Date(
+                                testimonial.createdAt
+                              ).toLocaleDateString()}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -537,54 +617,71 @@ export default function TestimonialsAdminPage() {
                   <div className="px-6 py-4 border-t border-border">
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-muted-foreground">
-                        Showing {((pagination.page - 1) * 10) + 1} to {Math.min(pagination.page * 10, pagination.total)} of {pagination.total} results
+                        Showing {(pagination.page - 1) * 10 + 1} to{" "}
+                        {Math.min(pagination.page * 10, pagination.total)} of{" "}
+                        {pagination.total} results
                       </div>
                       <div className="flex items-center gap-2">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => handlePageChange(Math.max(pagination.page - 1, 1))}
+                          onClick={() =>
+                            handlePageChange(Math.max(pagination.page - 1, 1))
+                          }
                           disabled={pagination.page === 1}
                           className="p-2 rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </motion.button>
-                        
+
                         <div className="flex items-center gap-1">
-                          {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                            let pageNum
-                            if (pagination.totalPages <= 5) {
-                              pageNum = i + 1
-                            } else if (pagination.page <= 3) {
-                              pageNum = i + 1
-                            } else if (pagination.page >= pagination.totalPages - 2) {
-                              pageNum = pagination.totalPages - 4 + i
-                            } else {
-                              pageNum = pagination.page - 2 + i
+                          {Array.from(
+                            { length: Math.min(5, pagination.totalPages) },
+                            (_, i) => {
+                              let pageNum;
+                              if (pagination.totalPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (pagination.page <= 3) {
+                                pageNum = i + 1;
+                              } else if (
+                                pagination.page >=
+                                pagination.totalPages - 2
+                              ) {
+                                pageNum = pagination.totalPages - 4 + i;
+                              } else {
+                                pageNum = pagination.page - 2 + i;
+                              }
+
+                              return (
+                                <motion.button
+                                  key={pageNum}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handlePageChange(pageNum)}
+                                  className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                                    pagination.page === pageNum
+                                      ? "bg-primary text-primary-foreground"
+                                      : "hover:bg-muted/50 text-muted-foreground"
+                                  }`}
+                                >
+                                  {pageNum}
+                                </motion.button>
+                              );
                             }
-                            
-                            return (
-                              <motion.button
-                                key={pageNum}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handlePageChange(pageNum)}
-                                className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                                  pagination.page === pageNum
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'hover:bg-muted/50 text-muted-foreground'
-                                }`}
-                              >
-                                {pageNum}
-                              </motion.button>
-                            )
-                          })}
+                          )}
                         </div>
-                        
+
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => handlePageChange(Math.min(pagination.page + 1, pagination.totalPages))}
+                          onClick={() =>
+                            handlePageChange(
+                              Math.min(
+                                pagination.page + 1,
+                                pagination.totalPages
+                              )
+                            )
+                          }
                           disabled={pagination.page === pagination.totalPages}
                           className="p-2 rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
@@ -611,7 +708,9 @@ export default function TestimonialsAdminPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-foreground">
-                {editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
+                {editingTestimonial
+                  ? "Edit Testimonial"
+                  : "Add New Testimonial"}
               </h2>
               <button
                 onClick={resetForm}
@@ -631,7 +730,9 @@ export default function TestimonialsAdminPage() {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                   />
                 </div>
@@ -643,7 +744,9 @@ export default function TestimonialsAdminPage() {
                   <input
                     type="text"
                     value={formData.position}
-                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, position: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                   />
                 </div>
@@ -657,7 +760,9 @@ export default function TestimonialsAdminPage() {
                   required
                   rows={4}
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
                   className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-vertical"
                 />
               </div>
@@ -669,7 +774,12 @@ export default function TestimonialsAdminPage() {
                   </label>
                   <select
                     value={formData.rating}
-                    onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        rating: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                   >
                     <option value={1}>1 Star</option>
@@ -687,7 +797,9 @@ export default function TestimonialsAdminPage() {
                   <input
                     type="url"
                     value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.value })
+                    }
                     className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                   />
                 </div>
@@ -698,10 +810,15 @@ export default function TestimonialsAdminPage() {
                   type="checkbox"
                   id="isVisible"
                   checked={formData.isVisible}
-                  onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isVisible: e.target.checked })
+                  }
                   className="w-5 h-5 rounded border-border text-primary focus:ring-primary/20"
                 />
-                <label htmlFor="isVisible" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="isVisible"
+                  className="text-sm font-medium text-foreground"
+                >
                   Make testimonial visible to public
                 </label>
               </div>
@@ -717,7 +834,11 @@ export default function TestimonialsAdminPage() {
                   {(actionStates.creating || actionStates.updating) && (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   )}
-                  {actionStates.creating || actionStates.updating ? 'Saving...' : editingTestimonial ? 'Update Testimonial' : 'Create Testimonial'}
+                  {actionStates.creating || actionStates.updating
+                    ? "Saving..."
+                    : editingTestimonial
+                    ? "Update Testimonial"
+                    : "Create Testimonial"}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -734,5 +855,5 @@ export default function TestimonialsAdminPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

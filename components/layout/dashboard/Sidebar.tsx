@@ -5,22 +5,24 @@ import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
   LogOut,
-  Users,
-  UserCheck,
-  ShieldCheck,
   UserCircle,
   BookOpen,
   Map,
   X,
+  Globe2,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 // --- Navigation Links for Each Role ---
 const adminNavigation = [
   { name: "Dashboard", href: "/dashboard/admin", icon: LayoutGrid },
-  { name: "Manage Guides", href: "/dashboard/admin/guides", icon: UserCheck },
-  { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
-  { name: "Manage Testimonials", href: "/dashboard/admin/testimonial", icon: Users },
+  {
+    name: "Testimonials",
+    href: "/dashboard/admin/testimonial",
+    icon: MessageSquare,
+  },
+  { name: "Package", href: "/dashboard/admin/package", icon: Globe2 },
 ];
 
 const guideNavigation = [
@@ -89,7 +91,10 @@ export default function Sidebar({
         </button>
 
         <div className="flex flex-col items-center gap-2 border-b px-4 py-5">
-          <Link href="/" className="text-2xl font-extrabold tracking-tight text-slate-900">
+          <Link
+            href="/"
+            className="text-2xl font-extrabold tracking-tight text-slate-900"
+          >
             BookMyTourGuide
           </Link>
           <div className="h-1 w-3/4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500" />
@@ -105,14 +110,20 @@ export default function Sidebar({
                   href={item.href}
                   onClick={() => handleLinkClick(item.href)}
                   className={`relative flex items-center gap-4 rounded-xl px-3 py-3 transition-all duration-200 
-                    ${ isActive
-                      ? "bg-white text-teal-600 font-bold shadow-sm"
-                      : "text-slate-600 hover:bg-teal-500/10 hover:text-teal-600"
-                    }`
-                  }
+                    ${
+                      isActive
+                        ? "bg-white text-teal-600 font-bold shadow-sm"
+                        : "text-slate-600 hover:bg-teal-500/10 hover:text-teal-600"
+                    }`}
                 >
-                  {isActive && <div className="absolute left-0 h-8 w-1 rounded-r-full bg-teal-500" />}
-                  <item.icon className={`h-6 w-6 transition-colors ${isActive ? "text-teal-500" : ""}`} />
+                  {isActive && (
+                    <div className="absolute left-0 h-8 w-1 rounded-r-full bg-teal-500" />
+                  )}
+                  <item.icon
+                    className={`h-6 w-6 transition-colors ${
+                      isActive ? "text-teal-500" : ""
+                    }`}
+                  />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -121,14 +132,17 @@ export default function Sidebar({
         </div>
 
         <div className="border-t p-4">
-            <Link
-                href="#"
-                onClick={(e) => { e.preventDefault(); logout(); }}
-                className="flex items-center gap-4 rounded-xl px-3 py-3 text-red-600 transition-all hover:bg-red-100"
-            >
-                <LogOut className="h-6 w-6" />
-                <span>Logout</span>
-            </Link>
+          <Link
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              logout();
+            }}
+            className="flex items-center gap-4 rounded-xl px-3 py-3 text-red-600 transition-all hover:bg-red-100"
+          >
+            <LogOut className="h-6 w-6" />
+            <span>Logout</span>
+          </Link>
         </div>
       </aside>
     </>
