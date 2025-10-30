@@ -1,58 +1,111 @@
-import axios, { AxiosInstance } from 'axios';
+// lib/service/api.ts
+import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-class ApiService {
-  private api: AxiosInstance;
-
-  constructor() {
-    this.api = axios.create({
-      baseURL: API_BASE_URL,
-      timeout: 30000,
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }
-
-  // Generic API methods
-  async get(endpoint: string, config?: any) {
-    const response = await this.api.get(endpoint, config);
-    return response.data;
-  }
-
-  async post(endpoint: string, data?: any, config?: any) {
-    const response = await this.api.post(endpoint, data, config);
-    return response.data;
-  }
-
-  async put(endpoint: string, data?: any, config?: any) {
-    const response = await this.api.put(endpoint, data, config);
-    return response.data;
-  }
-
-  // PATCH method
-  async patch(endpoint: string, data?: any, config?: any) {
-    const response = await this.api.patch(endpoint, data, config);
-    return response.data;
-  }
-
-  async delete(endpoint: string, config?: any) {
-    const response = await this.api.delete(endpoint, config);
-    return response.data;
-  }
-
-  // File upload
-  async postFormData(endpoint: string, formData: FormData) {
-    const response = await this.api.post(endpoint, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  }
+interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data?: T;
+  count?: number; 
+  page?: number; 
+  total?: number;
+  totalPages?: number; 
 }
 
-export const apiService = new ApiService();
-export default apiService;
+// Create axios instance with default config
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Request interceptor
+apiClient.interceptors.request.use(
+  (config) => {
+    config.withCredentials = true;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => {
+    return response.data as ApiResponse;
+  },
+  (error: AxiosError) => {
+    if (error.response) {
+      const errorData = error.response.data as ApiResponse;
+
+      if (error.response.status === 401) {
+        if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          const publicRoutes = [
+            "/",
+            "/login",
+            "/register",
+            "/about",
+            "/contact",
+            "/services",
+          ];
+          const isPublicRoute = publicRoutes.some(
+            (route) =>
+              currentPath === route || currentPath.startsWith("/public")
+          );
+
+          if (!isPublicRoute && !currentPath.includes("/login")) {
+            window.location.href =
+              "/login?message=Please login to access this page";
+          }
+        }
+      }
+
+      return Promise.reject(
+        errorData || { success: false, message: "Server error" }
+      );
+    } else if (error.request) {
+      return Promise.reject({
+        success: false,
+        message: "No response from server",
+      });
+    } else {
+      return Promise.reject({
+        success: false,
+        message: error.message || "Request failed",
+      });
+    }
+  }
+);
+
+export const apiService = {
+  get: <T = any>(
+    url: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => apiClient.get(url, config),
+
+  post: <T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => apiClient.post(url, data, config),
+
+  put: <T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => apiClient.put(url, data, config),
+
+  delete: <T = any>(
+    url: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => apiClient.delete(url, config),
+
+  patch: <T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => apiClient.patch(url, data, config),
+};
